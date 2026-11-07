@@ -127,6 +127,13 @@ namespace GarageGauntlet
         {
             RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
             RenderSettings.ambientLight = new Color(.51f, .57f, .73f);
+            Cubemap reflection = Resources.Load<Cubemap>("realism/workbench-reflection");
+            if (reflection != null)
+            {
+                RenderSettings.defaultReflectionMode = UnityEngine.Rendering.DefaultReflectionMode.Custom;
+                RenderSettings.customReflectionTexture = reflection;
+                RenderSettings.reflectionIntensity = .73f;
+            }
             Light sun = Group("Workshop sunlight", root).gameObject.AddComponent<Light>();
             sun.type = LightType.Directional;
             sun.color = new Color(1, .84f, .63f);
@@ -204,11 +211,12 @@ namespace GarageGauntlet
             House("building-type-d", -3.9f, 5.4f, 176, "variation-c");
             House("building-type-g", -.1f, 3.4f, 180, "colormap");
             House("building-type-m", -7.4f, -3.6f, 22, "variation-c");
-            House("building-type-d", -3.8f, -3.5f, 5, "variation-b");
-            House("building-type-a", -.4f, -3.8f, 0, "colormap");
-            House("building-type-g", 3.2f, -3.9f, 0, "variation-c");
+            Craftsman(-3.8f, -3.5f, 5, new Color(.91f, .78f, .69f));
+            Craftsman(-.4f, -3.8f, 0, Color.white);
+            Craftsman(3.2f, -3.9f, 348, new Color(.78f, .88f, .89f));
             House("building-type-m", 7.3f, -3.2f, 340, "variation-b");
 
+            DrawBrickStation();
             Material platform = Surface("timber", new Color(.83f, .77f, .65f), .13f);
             Material canopy = Paint(.26f, .35f, .43f);
             Material iron = Paint(.13f, .19f, .26f);
@@ -266,6 +274,100 @@ namespace GarageGauntlet
             Vector3 position = new Vector3(x, -.025f, z);
             housePositions.Add(position);
             Model("town/" + model, root, position, new Vector3(0, angle, 0), new Vector3(2.1f, 1.65f, 1.95f), texture);
+        }
+
+        private void Craftsman(float x, float z, float angle, Color tint)
+        {
+            Vector3 position = new Vector3(x, -.025f, z);
+            housePositions.Add(position);
+            var material = new Material(Palette("realism/craftsman-palette")) { color = tint };
+            Model("realism/craftsman", root, position, new Vector3(0, angle + 180, 0),
+                new Vector3(2.4f, 1.8f, 2.15f), uniform: true, finish: material);
+        }
+
+        private void DrawBrickStation()
+        {
+            const float x = -3.55f, z = 3.04f, front = 2.19f, back = 3.89f, width = 4.35f;
+            const float eave = 1.59f, ridge = 2.20f;
+            Material brick = Surface("brick", new Color(.83f, .76f, .70f), .12f);
+            Material tile = Surface("roof", new Color(.73f, .73f, .76f), .17f);
+            Material stone = Paint(.66f, .60f, .49f);
+            Material fascia = Paint(.30f, .28f, .25f);
+            Material frames = Paint(.80f, .75f, .62f);
+            Material glazing = Paint(.17f, .25f, .28f);
+            Material ticketWindow = Glow(.79f, .51f, .23f);
+
+            Box("Station foundation", new Vector3(x, .07f, z), new Vector3(width + .13f, .20f, 1.78f), stone);
+            SurfaceBox("Weathered station brick", new Vector3(x, .87f, z), new Vector3(width, 1.44f, 1.70f),
+                new Vector2(.67f, .67f), brick);
+            Box("Station lintel band", new Vector3(x, 1.39f, front - .009f), new Vector3(width, .058f, .047f), stone);
+            Box("Front gutter", new Vector3(x, eave, front - .105f), new Vector3(width + .30f, .064f, .082f), fascia);
+            Box("Rear gutter", new Vector3(x, eave, back + .105f), new Vector3(width + .30f, .064f, .082f), fascia);
+
+            float rise = ridge - eave;
+            float run = (back - front) / 2 + .13f;
+            float roofAngle = Mathf.Atan2(rise, run) * Mathf.Rad2Deg;
+            float roofDepth = Mathf.Sqrt(rise * rise + run * run);
+            for (int side = -1; side <= 1; side += 2)
+            {
+                Vector3 position = new Vector3(x, (ridge + eave) / 2, z + side * run / 2);
+                SurfaceBox("Clay tile roof", position, new Vector3(width + .29f, .075f, roofDepth),
+                    new Vector2(.84f, .74f), tile, Quaternion.Euler(side * roofAngle, 0, 0));
+            }
+            Box("Terracotta ridge cap", new Vector3(x, ridge + .028f, z), new Vector3(width + .31f, .082f, .15f),
+                Paint(.46f, .27f, .20f));
+            DrawGables(x, z, width, front, back, eave, ridge, brick);
+            SurfaceBox("Station chimney", new Vector3(x + 1.22f, 2.13f, z + .31f), new Vector3(.38f, .72f, .36f),
+                new Vector2(.67f, .67f), brick);
+            Box("Chimney coping", new Vector3(x + 1.22f, 2.50f, z + .31f), new Vector3(.47f, .076f, .45f), stone);
+            Box("Chimney cap", new Vector3(x + 1.22f, 2.55f, z + .31f), new Vector3(.26f, .07f, .23f), fascia);
+
+            for (int i = 0; i < 4; i++)
+            {
+                float wx = x + (i - 1.5f) * .96f;
+                Box("Recessed sash surround", new Vector3(wx, .87f, front - .016f), new Vector3(.60f, .69f, .07f), frames);
+                Box("Sash window glass", new Vector3(wx, .87f, front - .056f), new Vector3(.47f, .56f, .02f),
+                    i == 1 ? ticketWindow : glazing);
+                Box("Sash centre bar", new Vector3(wx, .87f, front - .075f), new Vector3(.027f, .56f, .018f), frames);
+                Box("Sash cross bar", new Vector3(wx, .87f, front - .075f), new Vector3(.47f, .029f, .018f), frames);
+                Box("Stone sill", new Vector3(wx, .505f, front - .053f), new Vector3(.67f, .066f, .14f), stone);
+            }
+            Box("Enamel station sign", new Vector3(x, 1.27f, front - .051f), new Vector3(1.42f, .23f, .042f), frames);
+            Transform name = Group("Switchyard station sign", root);
+            name.localPosition = new Vector3(x, 1.269f, front - .081f);
+            TextMesh text = name.gameObject.AddComponent<TextMesh>();
+            text.text = "SWITCHYARD";
+            text.anchor = TextAnchor.MiddleCenter;
+            text.alignment = TextAlignment.Center;
+            text.fontSize = 48;
+            text.characterSize = .032f;
+            text.color = new Color(.18f, .19f, .20f);
+            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (font != null)
+            {
+                text.font = font;
+                name.GetComponent<MeshRenderer>().sharedMaterial = font.material;
+            }
+        }
+
+        private void DrawGables(float x, float z, float width, float front, float back, float eave, float ridge, Material brick)
+        {
+            float left = x - width / 2, right = x + width / 2;
+            Vector3[] vertices =
+            {
+                new Vector3(left, eave, front), new Vector3(left, eave, back), new Vector3(left, ridge, z),
+                new Vector3(right, eave, back), new Vector3(right, eave, front), new Vector3(right, ridge, z)
+            };
+            var uv = new Vector2[vertices.Length];
+            for (int i = 0; i < vertices.Length; i++)
+                uv[i] = new Vector2(vertices[i].z, vertices[i].y) / .67f;
+            var mesh = new Mesh { name = "Brick gable ends", vertices = vertices, uv = uv,
+                triangles = new[] { 0, 1, 2, 3, 4, 5 } };
+            mesh.RecalculateNormals();
+            mesh.RecalculateTangents();
+            Transform ends = Group("Station gables", root);
+            ends.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
+            ends.gameObject.AddComponent<MeshRenderer>().sharedMaterial = brick;
         }
 
         private void DrawRailway(RaceCourse course)
@@ -373,7 +475,8 @@ namespace GarageGauntlet
             surface.gameObject.AddComponent<MeshRenderer>().sharedMaterial = material;
         }
 
-        private void Model(string path, Transform parent, Vector3 position, Vector3 euler, Vector3 dimensions, string texture = "colormap")
+        private void Model(string path, Transform parent, Vector3 position, Vector3 euler, Vector3 dimensions,
+            string texture = "colormap", bool uniform = false, Material finish = null)
         {
             GameObject prefab = Resources.Load<GameObject>(path);
             if (prefab == null)
@@ -384,7 +487,7 @@ namespace GarageGauntlet
             Renderer[] renderers = model.GetComponentsInChildren<Renderer>();
             Bounds bounds = renderers[0].bounds;
             string kit = path.Substring(0, path.IndexOf('/'));
-            Material material = Palette(kit + "/" + texture);
+            Material material = finish != null ? finish : Palette(kit + "/" + texture);
             foreach (Renderer renderer in renderers)
             {
                 bounds.Encapsulate(renderer.bounds);
@@ -396,7 +499,8 @@ namespace GarageGauntlet
 
             Vector3 center = pivot.InverseTransformPoint(bounds.center);
             model.localPosition -= new Vector3(center.x, center.y - bounds.extents.y, center.z);
-            pivot.localScale = new Vector3(dimensions.x / bounds.size.x, dimensions.y / bounds.size.y, dimensions.z / bounds.size.z);
+            Vector3 scale = new Vector3(dimensions.x / bounds.size.x, dimensions.y / bounds.size.y, dimensions.z / bounds.size.z);
+            pivot.localScale = uniform ? Vector3.one * Mathf.Min(scale.x, scale.y, scale.z) : scale;
             pivot.localPosition = position;
             pivot.localRotation = Quaternion.Euler(euler);
         }
@@ -427,10 +531,12 @@ namespace GarageGauntlet
             return material;
         }
 
-        private void SurfaceBox(string name, Vector3 position, Vector3 size, Vector2 tile, Material material)
+        private void SurfaceBox(string name, Vector3 position, Vector3 size, Vector2 tile, Material material,
+            Quaternion? rotation = null)
         {
             Transform surface = Group(name, root);
             surface.localPosition = position;
+            surface.localRotation = rotation ?? Quaternion.identity;
             surface.gameObject.AddComponent<MeshFilter>().sharedMesh = SceneryCube(size, tile);
             surface.gameObject.AddComponent<MeshRenderer>().sharedMaterial = material;
         }
@@ -472,7 +578,7 @@ namespace GarageGauntlet
             return renderer;
         }
 
-        internal static Mesh SceneryCube(Vector3 size, Vector2 tile)
+        private static Mesh SceneryCube(Vector3 size, Vector2 tile)
         {
             Vector3[] faces = { Vector3.right, Vector3.left, Vector3.up, Vector3.down, Vector3.forward, Vector3.back };
             var vertices = new Vector3[24];
