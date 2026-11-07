@@ -95,6 +95,7 @@ namespace GarageGauntlet
             heading = car.eulerAngles.y;
             speed = steering = 0;
             velocity = Vector3.zero;
+            town.PlayerModel.ResetMotion();
             SetBoosting(false);
             town.BoostTrail.Clear();
         }
@@ -159,6 +160,7 @@ namespace GarageGauntlet
                     Step(turn, throttle, useBoost, step);
                     dt -= step;
                 }
+                town.PlayerModel.Animate(speed, steering, Time.deltaTime);
             }
             sound.Update(speed, boosting, state == RaceState.Racing || state == RaceState.Countdown);
         }

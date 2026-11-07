@@ -20,6 +20,7 @@ namespace GarageGauntlet.Editor
             PlayerSettings.WebGL.decompressionFallback = true;
             PlayerSettings.WebGL.nameFilesAsHashes = true;
             PlayerSettings.WebGL.template = "PROJECT:RailwayRush";
+            RealismMaterials.Prepare();
 
             string destination = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Builds", "Web"));
             string[] args = Environment.GetCommandLineArgs();

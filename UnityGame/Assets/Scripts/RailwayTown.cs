@@ -20,7 +20,8 @@ namespace GarageGauntlet
             public Renderer Lamp;
         }
 
-        public Transform Car { get; }
+        public ScaleRcCar PlayerModel { get; }
+        public Transform Car => PlayerModel.Root;
         public Transform Train { get; }
         public Camera Camera { get; }
         public TrailRenderer BoostTrail { get; }
@@ -34,7 +35,7 @@ namespace GarageGauntlet
             DrawTown();
             DrawRailway(course);
             CombineScenery();
-            Car = CreateRacer("Player RC", new Color(.45f, .98f, .86f), 0);
+            PlayerModel = new ScaleRcCar(root, this.shader);
             Transform trailAnchor = Group("Boost trail", Car);
             trailAnchor.localPosition = new Vector3(0, .12f, -.65f);
             BoostTrail = trailAnchor.gameObject.AddComponent<TrailRenderer>();
@@ -45,12 +46,10 @@ namespace GarageGauntlet
             BoostTrail.sharedMaterial = Glow(.15f, .90f, 1);
             BoostTrail.emitting = false;
             Train = Group("Model train", root);
-            Model("train/train-locomotive-a", Train, new Vector3(1.13f, 0, 0),
-                new Vector3(0, 90, 0), new Vector3(1.05f, 1.32f, 2.1f));
-            Model("train/train-carriage-wood", Train, new Vector3(-1.10f, 0, 0),
-                new Vector3(0, 90, 0), new Vector3(1.05f, 1.18f, 2.1f));
-            Model("train/train-carriage-container-red", Train, new Vector3(-3.35f, 0, 0),
-                new Vector3(0, 90, 0), new Vector3(1.05f, 1.23f, 2.1f));
+            Model("realism/locomotive", Train, new Vector3(.45f, 0, 0),
+                new Vector3(0, 90, 0), new Vector3(.98f, .96f, 3.48f), "locomotive-color");
+            Model("train/train-carriage-container-red", Train, new Vector3(-2.91f, 0, 0),
+                new Vector3(0, 90, 0), new Vector3(1.05f, 1.23f, 3.10f));
 
             Camera = Group("Race camera", root).gameObject.AddComponent<Camera>();
             Camera.gameObject.AddComponent<AudioListener>();
@@ -138,14 +137,14 @@ namespace GarageGauntlet
 
         private void DrawBoard(RaceCourse course)
         {
-            Material wood = Paint(.30f, .14f, .09f);
+            Material wood = Surface("timber", new Color(.79f, .58f, .45f), .28f);
             Material trim = Paint(.69f, .40f, .23f);
             Material grass = Paint(.29f, .44f, .31f);
-            Material asphalt = Paint(.20f, .24f, .31f);
+            Material asphalt = Surface("asphalt", new Color(.64f, .69f, .78f), .12f);
             Material shoulder = Paint(.68f, .51f, .35f);
             Material cream = Paint(.92f, .85f, .68f);
             Box("Workshop table", new Vector3(0, -1.44f, 0), new Vector3(76, .6f, 61), Paint(.19f, .27f, .34f));
-            Box("Wooden display board", new Vector3(0, -.56f, 0), new Vector3(38, .9f, 30), wood);
+            SurfaceBox("Wooden display board", new Vector3(0, -.56f, 0), new Vector3(38, .9f, 30), new Vector2(4.1f, 1.4f), wood);
             Box("Tabletop edge band", new Vector3(0, -.25f, 0), new Vector3(38.1f, .12f, 30.1f), trim);
             Box("Felt landscape", new Vector3(0, -.105f, 0), new Vector3(36.5f, .17f, 28.5f), grass);
             Ribbon(course, RaceCourse.HalfWidth + .21f, .024f, shoulder, "Road shoulder");
@@ -210,17 +209,34 @@ namespace GarageGauntlet
             House("building-type-g", 3.2f, -3.9f, 0, "variation-c");
             House("building-type-m", 7.3f, -3.2f, 340, "variation-b");
 
-            Material platform = Paint(.58f, .47f, .36f);
+            Material platform = Surface("timber", new Color(.83f, .77f, .65f), .13f);
             Material canopy = Paint(.26f, .35f, .43f);
             Material iron = Paint(.13f, .19f, .26f);
             Material amber = Glow(1, .62f, .27f);
-            Box("Station platform", new Vector3(-3.5f, .06f, 1.52f), new Vector3(7.1f, .16f, 1.2f), platform);
+            SurfaceBox("Station platform boards", new Vector3(-3.5f, .06f, 1.52f),
+                new Vector3(7.1f, .16f, 1.2f), new Vector2(1.2f, .48f), platform);
             Box("Station canopy", new Vector3(-3.5f, 1.34f, 1.55f), new Vector3(6.8f, .19f, 1.3f), canopy);
+            Box("Canopy flashing", new Vector3(-3.5f, 1.34f, .903f), new Vector3(6.9f, .18f, .07f), iron);
+            Box("Platform edge stripe", new Vector3(-3.5f, .145f, .984f), new Vector3(6.94f, .012f, .11f),
+                Paint(.72f, .60f, .29f));
+            for (int i = 0; i < 16; i++)
+            {
+                float x = -6.69f + i * .42f;
+                Box("Roof seam", new Vector3(x, 1.445f, 1.55f), new Vector3(.022f, .026f, 1.30f), iron);
+            }
             for (int i = 0; i < 4; i++)
             {
                 float x = -6.55f + 2.02f * i;
                 Box("Canopy column", new Vector3(x, .68f, 1.92f), new Vector3(.11f, 1.1f, .11f), iron);
                 Box("Platform light", new Vector3(x, 1.19f, 1.5f), new Vector3(.48f, .085f, .16f), amber);
+            }
+            for (int i = 0; i < 2; i++)
+            {
+                float x = -5.4f + i * 3.2f;
+                Box("Platform bench seat", new Vector3(x, .40f, 1.73f), new Vector3(.96f, .055f, .24f), canopy);
+                Box("Platform bench back", new Vector3(x, .52f, 1.83f), new Vector3(.96f, .19f, .036f), canopy);
+                Box("Bench leg", new Vector3(x - .32f, .25f, 1.73f), new Vector3(.056f, .28f, .19f), iron);
+                Box("Bench leg", new Vector3(x + .32f, .25f, 1.73f), new Vector3(.056f, .28f, .19f), iron);
             }
             for (int i = 0; i < 5; i++)
             {
@@ -254,20 +270,38 @@ namespace GarageGauntlet
 
         private void DrawRailway(RaceCourse course)
         {
-            Material ballast = Paint(.46f, .39f, .33f);
-            Material sleepers = Paint(.31f, .23f, .17f);
+            Material ballast = Surface("ballast", new Color(.74f, .70f, .64f), .08f);
+            Material sleepers = Paint(.22f, .16f, .12f);
             Material metal = Paint(.74f, .76f, .73f);
-            Box("Ballast", new Vector3(0, .021f, 0), new Vector3(36.4f, .05f, 1.55f), ballast);
+            Material rust = Paint(.34f, .19f, .12f);
+            Material steel = Paint(.62f, .64f, .64f);
+            steel.SetFloat("_Metallic", .53f);
+            steel.SetFloat("_Glossiness", .54f);
+            SurfaceBox("Gravel rail bed", new Vector3(0, .021f, 0), new Vector3(36.4f, .05f, 1.55f),
+                new Vector2(1.42f, 1.20f), ballast);
             for (int i = -34; i <= 34; i++)
-                Box("Rail tie", new Vector3(i * .52f, .061f, 0), new Vector3(.17f, .053f, 1.30f), sleepers);
-            Box("North rail", new Vector3(0, .105f, .43f), new Vector3(36.5f, .065f, .066f), metal);
-            Box("South rail", new Vector3(0, .105f, -.43f), new Vector3(36.5f, .065f, .066f), metal);
+            {
+                float x = i * .52f;
+                Box("Rail tie", new Vector3(x, .061f, 0), new Vector3(.17f, .053f, 1.30f), sleepers);
+                if (x > 5.5f)
+                {
+                    Box("North tie plate", new Vector3(x, .093f, .43f), new Vector3(.135f, .018f, .17f), rust);
+                    Box("South tie plate", new Vector3(x, .093f, -.43f), new Vector3(.135f, .018f, .17f), rust);
+                }
+            }
+            foreach (float rail in new[] { -.43f, .43f })
+            {
+                Box("Oxidized rail web", new Vector3(0, .107f, rail), new Vector3(36.5f, .064f, .043f), rust);
+                Box("Polished rail head", new Vector3(0, .14f, rail), new Vector3(36.5f, .018f, .062f), steel);
+            }
             Material warning = Paint(.98f, .65f, .19f);
             Material stripe = Paint(.90f, .87f, .74f);
             signalOff = Paint(.30f, .14f, .12f);
             signalRed = Glow(1, .16f, .08f);
             foreach (Vector3 crossing in course.Crossings)
             {
+                if (crossing.x > 0)
+                    DetailCrossing(course, crossing);
                 float x = crossing.x - 2.18f;
                 float z = crossing.x > 0 ? -1.25f : 1.25f;
                 Box("Crossing signal post", new Vector3(x, .65f, z), new Vector3(.13f, 1.25f, .13f), metal);
@@ -283,9 +317,35 @@ namespace GarageGauntlet
             }
         }
 
+        private void DetailCrossing(RaceCourse course, Vector3 crossing)
+        {
+            Material timber = Surface("timber", new Color(.82f, .76f, .69f), .16f);
+            for (int i = 0; i < 3; i++)
+            {
+                float z = (i - 1) * .266f;
+                SurfaceBox("Timber crossing deck", new Vector3(crossing.x, .103f, z),
+                    new Vector3(4.54f, .048f, .243f), new Vector2(1.25f, .38f), timber);
+            }
+            Material chalk = Paint(.81f, .78f, .66f);
+            Material pole = Paint(.40f, .44f, .45f);
+            float gate = course.Locate(crossing, out _);
+            Vector3 marking = course.Sample(gate - 2.15f, out Vector3 forward);
+            Vector3 side = Vector3.Cross(Vector3.up, forward);
+            Box("Stop line", marking + Vector3.up * .05f, new Vector3(3.75f, .011f, .13f), chalk,
+                Quaternion.LookRotation(forward));
+            Vector3 sign = marking - side * 2.52f;
+            Box("Crossbuck mast", sign + Vector3.up * .72f, new Vector3(.065f, 1.48f, .065f), pole);
+            Quaternion front = Quaternion.LookRotation(forward);
+            Box("Crossbuck left board", sign + Vector3.up * 1.44f, new Vector3(.57f, .093f, .055f), chalk,
+                front * Quaternion.Euler(0, 0, 42));
+            Box("Crossbuck right board", sign + Vector3.up * 1.44f, new Vector3(.57f, .093f, .055f), chalk,
+                front * Quaternion.Euler(0, 0, -42));
+        }
+
         private void Ribbon(RaceCourse course, float halfWidth, float y, Material material, string name)
         {
             var vertices = new Vector3[course.Count * 2];
+            var uv = new Vector2[vertices.Length];
             var triangles = new int[course.Count * 6];
             for (int i = 0; i < course.Count; i++)
             {
@@ -295,6 +355,8 @@ namespace GarageGauntlet
                 int next = (current + 2) % vertices.Length;
                 vertices[current] = center - side;
                 vertices[current + 1] = center + side;
+                uv[current] = new Vector2(vertices[current].x, vertices[current].z) / 2.3f;
+                uv[current + 1] = new Vector2(vertices[current + 1].x, vertices[current + 1].z) / 2.3f;
                 int triangle = i * 6;
                 triangles[triangle] = current;
                 triangles[triangle + 1] = next;
@@ -303,8 +365,9 @@ namespace GarageGauntlet
                 triangles[triangle + 4] = next;
                 triangles[triangle + 5] = next + 1;
             }
-            var mesh = new Mesh { name = name, vertices = vertices, triangles = triangles };
+            var mesh = new Mesh { name = name, vertices = vertices, triangles = triangles, uv = uv };
             mesh.RecalculateNormals();
+            mesh.RecalculateTangents();
             Transform surface = Group(name, root);
             surface.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
             surface.gameObject.AddComponent<MeshRenderer>().sharedMaterial = material;
@@ -355,6 +418,23 @@ namespace GarageGauntlet
             return material;
         }
 
+        private Material Surface(string texture, Color tint, float gloss)
+        {
+            Material template = Resources.Load<Material>("realism/" + texture + "-surface");
+            Material material = template != null ? new Material(template) : new Material(shader);
+            material.color = tint;
+            material.SetFloat("_Glossiness", gloss);
+            return material;
+        }
+
+        private void SurfaceBox(string name, Vector3 position, Vector3 size, Vector2 tile, Material material)
+        {
+            Transform surface = Group(name, root);
+            surface.localPosition = position;
+            surface.gameObject.AddComponent<MeshFilter>().sharedMesh = SceneryCube(size, tile);
+            surface.gameObject.AddComponent<MeshRenderer>().sharedMaterial = material;
+        }
+
         private Material Glow(float red, float green, float blue)
         {
             Material material = Paint(red, green, blue);
@@ -370,7 +450,7 @@ namespace GarageGauntlet
             if (parent == null)
             {
                 if (cube == null)
-                    cube = SceneryCube();
+                    cube = SceneryCube(Vector3.one, Vector2.one);
                 if (!scenery.TryGetValue(material, out List<CombineInstance> meshes))
                 {
                     meshes = new List<CombineInstance>();
@@ -392,11 +472,12 @@ namespace GarageGauntlet
             return renderer;
         }
 
-        private static Mesh SceneryCube()
+        internal static Mesh SceneryCube(Vector3 size, Vector2 tile)
         {
             Vector3[] faces = { Vector3.right, Vector3.left, Vector3.up, Vector3.down, Vector3.forward, Vector3.back };
             var vertices = new Vector3[24];
             var normals = new Vector3[24];
+            var uv = new Vector2[24];
             var triangles = new int[36];
             for (int face = 0; face < faces.Length; face++)
             {
@@ -410,15 +491,26 @@ namespace GarageGauntlet
                 vertices[vertex + 1] = center + u - v;
                 vertices[vertex + 2] = center + u + v;
                 vertices[vertex + 3] = center - u + v;
+                float tilesU = Vector3.Scale(u * 2, size).magnitude / tile.x;
+                float tilesV = Vector3.Scale(v * 2, size).magnitude / tile.y;
+                uv[vertex] = Vector2.zero;
+                uv[vertex + 1] = new Vector2(tilesU, 0);
+                uv[vertex + 2] = new Vector2(tilesU, tilesV);
+                uv[vertex + 3] = new Vector2(0, tilesV);
                 for (int i = 0; i < 4; i++)
+                {
                     normals[vertex + i] = normal;
+                    vertices[vertex + i] = Vector3.Scale(vertices[vertex + i], size);
+                }
                 int triangle = face * 6;
                 triangles[triangle] = triangles[triangle + 3] = vertex;
                 triangles[triangle + 1] = vertex + 1;
                 triangles[triangle + 2] = triangles[triangle + 4] = vertex + 2;
                 triangles[triangle + 5] = vertex + 3;
             }
-            return new Mesh { name = "Scenery cube", vertices = vertices, normals = normals, triangles = triangles };
+            var mesh = new Mesh { name = "Scenery cube", vertices = vertices, normals = normals, triangles = triangles, uv = uv };
+            mesh.RecalculateTangents();
+            return mesh;
         }
 
         private void CombineScenery()

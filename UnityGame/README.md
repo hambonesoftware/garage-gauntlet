@@ -21,6 +21,8 @@ Drive across the teal pads to recharge. Flashing signals and lowered gates mean 
 
 The included Kenney models and texture atlases are released under **CC0**. The original license notices are in [ThirdParty](ThirdParty/).
 
+The RC body and animated wheels are built for Railway Rush. The scale-model surfaces and locomotive use additional [CC0 assets and credits](ThirdParty/ScaleModelAssets.md).
+
 - [Toy Car Kit 1.2](https://kenney.nl/assets/toy-car-kit)
 - [Train Kit 1.1](https://kenney.nl/assets/train-kit)
 - [City Kit (Suburban) 2.0](https://kenney.nl/assets/city-kit-suburban)
