@@ -18,12 +18,28 @@ namespace GarageGauntlet
         private float Height => Screen.height / Scale;
         private int triggerFinger = -1;
         private bool mouseTrigger;
-        private Rect TriggerPad => new Rect(Width - 174, Height - 141, 156, 122);
+        private static readonly float[] TriggerTicks = { 1, .75f, .5f, .25f, 0 };
+        private Rect TriggerPad
+        {
+            get
+            {
+                float height = Mathf.Min(Mathf.Max(138, Height - 184), Mathf.Clamp(Height * .57f, 248, 370));
+                return new Rect(Width - 192, Height - height - 14, 178, height);
+            }
+        }
+
+        private static Rect TriggerTrack(Rect pad) => new Rect(pad.x + 22, pad.y + 58, 62, pad.height - 94);
 
         private void ReleaseTrigger()
         {
             triggerFinger = -1;
             mouseTrigger = false;
+        }
+
+        private void OnApplicationFocus(bool focused)
+        {
+            if (!focused)
+                ReleaseTrigger();
         }
 
         private float ReadTrigger()
@@ -64,8 +80,23 @@ namespace GarageGauntlet
         }
 
         private Vector2 ToHud(Vector2 position) => new Vector2(position.x / Scale, (Screen.height - position.y) / Scale);
-        private static float PowerAt(Rect pad, float y) =>
-            Mathf.Lerp(.12f, 1, 1 - Mathf.InverseLerp(pad.y + 28, pad.yMax - 10, y));
+        private static float PowerAt(Rect pad, float y)
+        {
+            Rect track = TriggerTrack(pad);
+            return TriggerPower(Mathf.InverseLerp(track.yMax, track.yMin, y));
+        }
+
+        internal static float TriggerPower(float travel) => MapTrigger(travel, .18f, .82f, .30f, .76f);
+        internal static float TriggerTravel(float power) => MapTrigger(power, .30f, .76f, .18f, .82f);
+
+        private static float MapTrigger(float value, float first, float last, float low, float high)
+        {
+            if (value <= first)
+                return Mathf.Lerp(0, low, Mathf.InverseLerp(0, first, value));
+            if (value <= last)
+                return Mathf.Lerp(low, high, Mathf.InverseLerp(first, last, value));
+            return Mathf.Lerp(high, 1, Mathf.InverseLerp(last, 1, value));
+        }
 
         private void OnGUI()
         {
@@ -83,7 +114,10 @@ namespace GarageGauntlet
                 else if (state == RaceState.Paused)
                     DrawPause();
                 else if (state == RaceState.Countdown)
+                {
                     DrawCountdown();
+                    DrawTrigger(SlotMotor.TopSpeed, false);
+                }
                 else
                     DrawRaceHud();
             }
@@ -107,7 +141,7 @@ namespace GarageGauntlet
                 StartRace(false);
             if (GUI.Button(new Rect(x + 26 + half, y + 215, half, 36), sound.Enabled ? "SOUND ON" : "SOUND OFF", secondary))
                 sound.Toggle();
-            GUI.Label(new Rect(x + 19, y + 258, width - 38, 20), "W / Space for full power  •  Shift for corners", small);
+            GUI.Label(new Rect(x + 19, y + 258, width - 38, 20), "Drag the trigger  •  W for full power  •  Shift to ease", small);
         }
 
         private void DrawTelemetry()
@@ -153,18 +187,40 @@ namespace GarageGauntlet
                 Caption(alert.x + 11, alert.y + 9, alert.width - 22, banner);
             }
 
+            DrawTrigger(suggestedSpeed, corner || train || tailSliding);
+        }
+
+        private void DrawTrigger(float suggestedSpeed, bool warning)
+        {
             Rect pad = TriggerPad;
-            Card(pad, corner || train || tailSliding ? Amber : Mint);
-            Caption(pad.x + 10, pad.y + 8, pad.width - 20, "TRIGGER   " + Mathf.RoundToInt(motor.Trigger * 100) + "%");
-            Rect guide = new Rect(pad.x + 12, pad.y + 31, 33, 75);
-            Fill(guide, Quiet);
-            float fill = guide.height * motor.Trigger;
-            Fill(new Rect(guide.x, guide.yMax - fill, guide.width, fill), corner || tailSliding ? Amber : Mint);
-            float safe = Mathf.Clamp01(suggestedSpeed / SlotMotor.TopSpeed);
-            Fill(new Rect(guide.x, guide.yMax - guide.height * safe, guide.width, 2), Ivory);
-            GUI.Label(new Rect(pad.x + 51, pad.y + 34, 100, 20), "SLIDE UP", small);
-            GUI.Label(new Rect(pad.x + 51, pad.y + 55, 100, 20), "TO SQUEEZE", small);
-            GUI.Label(new Rect(pad.x + 51, pad.y + 87, 101, 20), "LIFT TO BRAKE", small);
+            Color accent = warning ? Amber : Mint;
+            Card(pad, accent);
+            Caption(pad.x + 13, pad.y + 9, pad.width - 26, "THROTTLE TRIGGER");
+            GUI.Label(new Rect(pad.x + 12, pad.y + 24, pad.width - 24, 29),
+                Mathf.RoundToInt(motor.Trigger * 100) + "%", metric);
+
+            Rect track = TriggerTrack(pad);
+            Fill(new Rect(track.x - 4, track.y - 4, track.width + 8, track.height + 8), Quiet);
+            Fill(track, Ink);
+            float leverY = track.yMax - track.height * TriggerTravel(motor.Trigger);
+            Fill(new Rect(track.x, leverY, track.width, track.yMax - leverY), accent * .56f);
+
+            foreach (float tick in TriggerTicks)
+            {
+                float y = track.yMax - track.height * TriggerTravel(tick);
+                Fill(new Rect(track.xMax + 8, y, 8, 1), Muted);
+                GUI.Label(new Rect(track.xMax + 20, y - 10, 58, 20), Mathf.RoundToInt(tick * 100) + "%", small);
+            }
+
+            if (suggestedSpeed < SlotMotor.TopSpeed - .5f)
+            {
+                float safeY = track.yMax - track.height * TriggerTravel(suggestedSpeed / SlotMotor.TopSpeed);
+                Fill(new Rect(track.x - 6, safeY, track.width + 12, 2), Amber);
+            }
+
+            Fill(new Rect(track.x - 4, leverY - 6, track.width + 8, 12), accent);
+            Fill(new Rect(track.x + 10, leverY - 1, track.width - 20, 2), Ink);
+            GUI.Label(new Rect(pad.x + 13, pad.yMax - 24, pad.width - 26, 20), "UP · LIFT TO BRAKE", small);
         }
 
         private void DrawPause()

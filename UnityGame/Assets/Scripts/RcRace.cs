@@ -51,6 +51,7 @@ namespace GarageGauntlet
 
         private void ResetRace()
         {
+            ReleaseTrigger();
             progress.Reset();
             motor.Reset();
             town.PlayerModel.ResetMotion();
@@ -104,6 +105,7 @@ namespace GarageGauntlet
                 StartRace(grandPrix);
 
             float dt = Time.deltaTime;
+            float throttle = state == RaceState.Countdown || state == RaceState.Racing ? ReadTrigger() : 0;
             if (state == RaceState.Countdown)
             {
                 int before = Mathf.CeilToInt(countdown);
@@ -120,7 +122,6 @@ namespace GarageGauntlet
 
             if (state == RaceState.Racing)
             {
-                float throttle = ReadTrigger();
                 while (dt > 0 && state == RaceState.Racing)
                 {
                     float step = Mathf.Min(dt, MaximumStep);
