@@ -23,16 +23,16 @@
   </style>
 </head>
 <body>
-  <canvas id="race" tabindex="0" aria-label="Railway Rush RC racing game"></canvas>
+  <canvas id="race" tabindex="0" aria-label="Railway Rush slot-car racing game"></canvas>
   <section id="loading" role="status">
     <div class="grid">
       <span>GARAGE GAUNTLET / 01</span>
       <h1>Railway<br>Rush</h1>
-      <p id="message">Setting up the tabletop Grand Prix…</p>
+      <p id="message">Powering up the four-lane slot track…</p>
       <progress id="progress" aria-label="Game loading" value="0" max="1"></progress>
     </div>
   </section>
-  <script src="Build/029964a429b67aee5dd224718c545e9f.loader.js"></script>
+  <script src="Build/74791ae957a7b866143750eb75d765b9.loader.js"></script>
   <script>
     const canvas = document.querySelector("#race");
     const loading = document.querySelector("#loading");
@@ -42,9 +42,9 @@
     async function loadRace() {
       try {
         await createUnityInstance(canvas, {
-          dataUrl: "Build/08c11f1e7efe846345d5842139eae961.data.unityweb",
-          frameworkUrl: "Build/cd56067d7fb831487cc18872a4e483dd.framework.js.unityweb",
-          codeUrl: "Build/93ff1377a25ce4a6bda8dde8f5b5d93f.wasm.unityweb",
+          dataUrl: "Build/2e8727066b8ecfa30715352fa8e2dc64.data.unityweb",
+          frameworkUrl: "Build/bfb9966b2c65fcfc594f1d064558da25.framework.js.unityweb",
+          codeUrl: "Build/61e3c288c257c15ca70a54a7cde41d96.wasm.unityweb",
           streamingAssetsUrl: "StreamingAssets",
           companyName: "Garage Gauntlet",
           productName: "Railway Rush",
