@@ -11,6 +11,7 @@ namespace GarageGauntlet
         public const float HalfWidth = 2.15f;
         public float Length => distances[points.Count];
         public int Count => points.Count;
+        public IReadOnlyList<Vector3> Crossings { get; }
 
         public RaceCourse()
         {
@@ -37,11 +38,30 @@ namespace GarageGauntlet
 
             for (int i = 0; i < Count; i++)
                 distances.Add(distances[i] + Vector3.Distance(At(i), At(i + 1)));
+
+            var crossings = new List<Vector3>();
+            for (int i = 0; i < Count; i++)
+            {
+                Vector3 start = At(i);
+                Vector3 end = At(i + 1);
+                if ((start.z < 0) == (end.z < 0))
+                    continue;
+                float fraction = -start.z / (end.z - start.z);
+                crossings.Add(Vector3.Lerp(start, end, fraction));
+            }
+            Crossings = crossings;
         }
 
         public Vector3 At(int index) => points[(index + Count) % Count];
         public Vector3 Tangent(int index) => (At(index + 1) - At(index - 1)).normalized;
         public static Vector3 Point(float x, float z) => new Vector3(x, 0, z);
+        public float Delta(float from, float to) => Mathf.Repeat(to - from + Length / 2, Length) - Length / 2;
+
+        public Vector3 Lane(float distance, float offset, out Vector3 forward)
+        {
+            Vector3 center = Sample(distance, out forward);
+            return center + Vector3.Cross(Vector3.up, forward) * offset;
+        }
 
         public Vector3 Sample(float distance, out Vector3 direction)
         {

@@ -18,6 +18,7 @@ namespace GarageGauntlet.Editor
             PlayerSettings.productName = "Garage Gauntlet: Railway Rush";
             PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Gzip;
             PlayerSettings.WebGL.decompressionFallback = true;
+            PlayerSettings.WebGL.nameFilesAsHashes = true;
             PlayerSettings.WebGL.template = "PROJECT:RailwayRush";
 
             string destination = Path.GetFullPath(Path.Combine(Application.dataPath, "..", "Builds", "Web"));
