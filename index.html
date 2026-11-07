@@ -3,29 +3,36 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#15272c">
+  <meta name="theme-color" content="#101b26">
   <title>Garage Gauntlet · Railway Rush</title>
   <style>
     * { box-sizing: border-box; }
     html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
-    body { background: #15272c; color: #fff5db; font: 16px system-ui, sans-serif; }
+    body { background: #101b26; color: #f4f4e3; font: 16px system-ui, sans-serif;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
     canvas { display: block; width: 100%; height: 100%; touch-action: none; outline: none; }
-    #loading { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; padding: 24px; }
+    #loading { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px;
+      background: radial-gradient(ellipse at 50% 95%, #234349, transparent 65%), #101b26; }
     #loading[hidden] { display: none; }
-    #loading span { letter-spacing: .16em; color: #ffc971; font-weight: bold; }
-    #loading h1 { margin: .2em 0 .5em; font-size: clamp(36px, 9vw, 66px); }
-    progress { width: 100%; accent-color: #ffc971; }
+    .grid { width: min(100%, 34rem); padding: clamp(20px, 6vw, 46px); border-top: 3px solid #67eccb; background: #101b26;
+      box-shadow: 0 24px 90px #080f1590; }
+    .grid span { letter-spacing: .16em; color: #67eccb; font-weight: 800; font-size: .74rem; }
+    .grid h1 { margin: .16em 0 .35em; font-size: clamp(42px, 9vw, 74px); line-height: .96; letter-spacing: -.065em; }
+    .grid p { color: #bac6cb; }
+    progress { width: 100%; accent-color: #67eccb; height: 7px; }
   </style>
 </head>
 <body>
   <canvas id="race" tabindex="0" aria-label="Railway Rush RC racing game"></canvas>
   <section id="loading" role="status">
-    <span>GARAGE GAUNTLET</span>
-    <h1>Railway Rush</h1>
-    <p id="message">Setting up the model railway…</p>
-    <progress id="progress" aria-label="Game loading" value="0" max="1"></progress>
+    <div class="grid">
+      <span>GARAGE GAUNTLET / 01</span>
+      <h1>Railway<br>Rush</h1>
+      <p id="message">Setting up the tabletop Grand Prix…</p>
+      <progress id="progress" aria-label="Game loading" value="0" max="1"></progress>
+    </div>
   </section>
-  <script src="Build/Web.loader.js"></script>
+  <script src="Build/82b446dfb80d5d3f77951752a9b06309.loader.js"></script>
   <script>
     const canvas = document.querySelector("#race");
     const loading = document.querySelector("#loading");
@@ -35,9 +42,9 @@
     async function loadRace() {
       try {
         await createUnityInstance(canvas, {
-          dataUrl: "Build/Web.data.unityweb",
-          frameworkUrl: "Build/Web.framework.js.unityweb",
-          codeUrl: "Build/Web.wasm.unityweb",
+          dataUrl: "Build/a305510320d0739a90bee167621fa3e7.data.unityweb",
+          frameworkUrl: "Build/fd6d53f5a6c35ba67e066afbc459c5cd.framework.js.unityweb",
+          codeUrl: "Build/99f6bc9d7c56bc9e1826f3b4095cdb09.wasm.unityweb",
           streamingAssetsUrl: "StreamingAssets",
           companyName: "Garage Gauntlet",
           productName: "Railway Rush",
