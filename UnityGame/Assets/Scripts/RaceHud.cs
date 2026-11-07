@@ -142,22 +142,24 @@ namespace GarageGauntlet
             float suggestedSpeed = motor.BrakeTarget();
             bool corner = !motor.Recovering && suggestedSpeed < SlotMotor.TopSpeed - .5f
                 && suggestedSpeed < motor.Speed + .7f;
+            bool tailSliding = !motor.Recovering && Mathf.Abs(motor.SlideAngle) > 16;
             string banner = Time.unscaledTime < noticeUntil ? notice
-                : train ? "TRAIN CROSSING · LIFT OFF" : corner ? "TIGHT BEND · LIFT OFF" : "";
+                : train ? "TRAIN CROSSING · LIFT OFF"
+                : tailSliding ? "TAIL SLIDING · EASE OFF" : corner ? "TIGHT BEND · LIFT OFF" : "";
             if (banner.Length != 0)
             {
                 Rect alert = new Rect(Width / 2 - 142, 116, 284, 35);
-                Card(alert, train || corner ? Amber : Mint);
+                Card(alert, train || corner || tailSliding ? Amber : Mint);
                 Caption(alert.x + 11, alert.y + 9, alert.width - 22, banner);
             }
 
             Rect pad = TriggerPad;
-            Card(pad, corner || train ? Amber : Mint);
+            Card(pad, corner || train || tailSliding ? Amber : Mint);
             Caption(pad.x + 10, pad.y + 8, pad.width - 20, "TRIGGER   " + Mathf.RoundToInt(motor.Trigger * 100) + "%");
             Rect guide = new Rect(pad.x + 12, pad.y + 31, 33, 75);
             Fill(guide, Quiet);
             float fill = guide.height * motor.Trigger;
-            Fill(new Rect(guide.x, guide.yMax - fill, guide.width, fill), corner ? Amber : Mint);
+            Fill(new Rect(guide.x, guide.yMax - fill, guide.width, fill), corner || tailSliding ? Amber : Mint);
             float safe = Mathf.Clamp01(suggestedSpeed / SlotMotor.TopSpeed);
             Fill(new Rect(guide.x, guide.yMax - guide.height * safe, guide.width, 2), Ivory);
             GUI.Label(new Rect(pad.x + 51, pad.y + 34, 100, 20), "SLIDE UP", small);

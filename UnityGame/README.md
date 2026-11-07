@@ -8,7 +8,7 @@ Race a die-cast slot car around a four-lane circuit in a tabletop railway town. 
 2. Open `Assets/Scenes/RailwayRush.unity` and press **Play**.
 3. Hold **W**, **Up Arrow**, or **Space** for full throttle. Use **Shift** for corner pace. On touch screens or with a mouse, press the on-screen **Trigger** and slide upward for more power. Release to brake. **Esc** or **P** pauses, **M** toggles sound, and **Enter** starts or repeats a race.
 
-Each car follows its own slot. Lift before tight turns and whenever the crossing lights flash. A car that jumps its slot or hits the train is automatically re-slotted after a delay. Slot racing has its own personal-best records.
+Each car follows its own slot by its front guide. The rear swings outward in fast turns. Ease off the trigger to settle the tail before the guide pops out. Lift when the crossing lights flash. A car that jumps its slot or hits the train is automatically re-slotted after a delay. Slot racing has its own personal-best records.
 
 ## Publish to GitHub Pages
 
