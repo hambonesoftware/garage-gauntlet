@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace GarageGauntlet
 {
-    internal enum RaceSound { Tick, Start, Charge, Boost, Lap, Hit, Finish }
+    internal enum RaceSound { Tick, Start, Lap, Hit, Finish }
 
     internal sealed class RaceAudio
     {
@@ -27,8 +27,6 @@ namespace GarageGauntlet
             {
                 Tone("Countdown", .12f, 490, 440),
                 Tone("Start", .32f, 580, 900),
-                Tone("Battery", .26f, 570, 1170),
-                Tone("Boost", .32f, 250, 580),
                 Tone("Lap", .30f, 670, 890),
                 Tone("Impact", .31f, 112, 47, .54f),
                 Tone("Finish", .68f, 490, 985)
@@ -61,12 +59,12 @@ namespace GarageGauntlet
                 effects.PlayOneShot(cues[(int)sound], .44f);
         }
 
-        public void Update(float speed, bool boosting, bool active)
+        public void Update(float speed, bool active)
         {
             float motor = Mathf.Clamp01(Mathf.Abs(speed) / 15);
             float level = Enabled && active ? .085f + motor * .13f : 0;
             engine.volume = Mathf.MoveTowards(engine.volume, level, Time.unscaledDeltaTime * .8f);
-            engine.pitch = .69f + motor * .89f + (boosting ? .2f : 0);
+            engine.pitch = .69f + motor * 1.06f;
         }
 
         private static AudioClip MakeEngine()

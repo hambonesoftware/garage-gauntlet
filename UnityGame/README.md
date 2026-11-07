@@ -1,14 +1,14 @@
 # Garage Gauntlet · Railway Rush
 
-Race a miniature RC car around a tabletop railway town. The three-lap Grand Prix pits you against Ember, Switch, and Volt. Time Trial gives you the same circuit on your own with a separate personal best. The game runs locally in Unity or in the browser.
+Race a die-cast slot car around a four-lane circuit in a tabletop railway town. The three-lap Grand Prix pits you against Ember, Switch, and Volt. Time Trial gives you the same circuit on your own with a separate personal best. The game runs locally in Unity or in the browser.
 
 ## Play in Unity
 
 1. Sign in to Unity Hub and activate your Editor license. Add the `UnityGame` folder as a project and open it in Unity **6000.3.28f1 LTS**.
 2. Open `Assets/Scenes/RailwayRush.unity` and press **Play**.
-3. Use **WASD** or the **arrow keys** to drive, **Space** or **Left Shift** to boost, and **R** to recover at the last checkpoint. **Esc** or **P** pauses, **M** toggles sound, and **Enter** starts or repeats a race. On touch devices, hold **GO** and steer with the opposite thumb. Hold **BOOST** with **GO** to spend battery charge. Open **Pause** to recover.
+3. Hold **W**, **Up Arrow**, or **Space** for full throttle. Use **Shift** for corner pace. On touch screens or with a mouse, press the on-screen **Trigger** and slide upward for more power. Release to brake. **Esc** or **P** pauses, **M** toggles sound, and **Enter** starts or repeats a race.
 
-Drive across the teal pads to recharge. Flashing signals and lowered gates mean a train is approaching. Grass slows the car, resetting adds two seconds to your time, and a train collision adds three.
+Each car follows its own slot. Lift before tight turns and whenever the crossing lights flash. A car that jumps its slot or hits the train is automatically re-slotted after a delay. Slot racing has its own personal-best records.
 
 ## Publish to GitHub Pages
 

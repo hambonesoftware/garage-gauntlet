@@ -8,7 +8,6 @@ namespace GarageGauntlet
         private readonly Transform root;
         private readonly Shader shader;
         private readonly Dictionary<string, Material> palettes = new Dictionary<string, Material>();
-        private readonly List<Vector3> housePositions = new List<Vector3>();
         private readonly List<CrossingSignal> signals = new List<CrossingSignal>();
         private readonly Dictionary<Material, List<CombineInstance>> scenery = new Dictionary<Material, List<CombineInstance>>();
         private Mesh cube;
@@ -24,7 +23,6 @@ namespace GarageGauntlet
         public Transform Car => PlayerModel.Root;
         public Transform Train { get; }
         public Camera Camera { get; }
-        public TrailRenderer BoostTrail { get; }
 
         public RailwayTown(Transform root, RaceCourse course, Shader shader)
         {
@@ -36,15 +34,6 @@ namespace GarageGauntlet
             DrawRailway(course);
             CombineScenery();
             PlayerModel = new ScaleRcCar(root, this.shader);
-            Transform trailAnchor = Group("Boost trail", Car);
-            trailAnchor.localPosition = new Vector3(0, .12f, -.65f);
-            BoostTrail = trailAnchor.gameObject.AddComponent<TrailRenderer>();
-            BoostTrail.time = .22f;
-            BoostTrail.startWidth = .53f;
-            BoostTrail.endWidth = .04f;
-            BoostTrail.minVertexDistance = .12f;
-            BoostTrail.sharedMaterial = Glow(.15f, .90f, 1);
-            BoostTrail.emitting = false;
             Train = Group("Model train", root);
             Model("realism/locomotive", Train, new Vector3(.45f, 0, 0),
                 new Vector3(0, 90, 0), new Vector3(.98f, .96f, 3.48f), "locomotive-color");
@@ -59,35 +48,15 @@ namespace GarageGauntlet
             Camera.farClipPlane = 100;
         }
 
-        public Transform CreateRacer(string name, Color color, int variant)
+        private static readonly Color[] SlotColors =
         {
-            Transform racer = Group(name, root);
-            Model("toy/vehicle-racer", racer, Vector3.zero, new Vector3(0, 180, 0),
-                new Vector3(.96f, .62f, 1.6f), variant % 2 == 0 ? "colormap" : "variation-b");
-            if (variant != 0)
-                Box("Team stripe", new Vector3(0, .64f, -.06f), new Vector3(.34f, .03f, .32f),
-                    Paint(color.r, color.g, color.b), parent: racer);
-            return racer;
-        }
+            new Color(.94f, .34f, .25f), new Color(.34f, .91f, .62f),
+            new Color(.98f, .72f, .25f), new Color(.35f, .58f, .98f)
+        };
 
-        public Transform CreateBoostPad(Vector3 position, Vector3 forward)
-        {
-            Transform pad = Group("Battery pickup", root);
-            pad.SetPositionAndRotation(position + Vector3.up * .061f, Quaternion.LookRotation(forward));
-            Material outer = Glow(.15f, .75f, .70f);
-            Material inner = Paint(.14f, .35f, .41f);
-            Box("Charge plate", Vector3.zero, new Vector3(1.36f, .035f, 1.5f), outer, parent: pad);
-            Box("Grip inlay", Vector3.up * .023f, new Vector3(1.14f, .025f, 1.27f), inner, parent: pad);
-            for (int row = 0; row < 2; row++)
-            {
-                float z = -.35f + row * .52f;
-                Box("Chevron", new Vector3(-.20f, .05f, z), new Vector3(.10f, .02f, .55f), outer,
-                    Quaternion.Euler(0, 48, 0), pad);
-                Box("Chevron", new Vector3(.20f, .05f, z), new Vector3(.10f, .02f, .55f), outer,
-                    Quaternion.Euler(0, -48, 0), pad);
-            }
-            return pad;
-        }
+        public static Color SlotColor(int lane) => SlotColors[lane];
+
+        public ScaleRcCar CreateRacer(string name) => new ScaleRcCar(root, shader, name);
 
         public static bool SignalClosed(float trainX, float crossingX) =>
             trainX >= crossingX - 7.6f && trainX <= crossingX + 5.15f;
@@ -111,16 +80,6 @@ namespace GarageGauntlet
                 if (signal.Lamp.sharedMaterial != lamp)
                     signal.Lamp.sharedMaterial = lamp;
             }
-        }
-
-        public bool Blocks(Vector3 position)
-        {
-            foreach (Vector3 house in housePositions)
-            {
-                if (Mathf.Abs(position.x - house.x) < 1.12f && Mathf.Abs(position.z - house.z) < 1.08f)
-                    return true;
-            }
-            return false;
         }
 
         private void SetupLighting()
@@ -147,15 +106,27 @@ namespace GarageGauntlet
             Material wood = Surface("timber", new Color(.79f, .58f, .45f), .28f);
             Material trim = Paint(.69f, .40f, .23f);
             Material grass = Paint(.29f, .44f, .31f);
-            Material asphalt = Surface("asphalt", new Color(.64f, .69f, .78f), .12f);
-            Material shoulder = Paint(.68f, .51f, .35f);
+            Material plastic = Paint(.16f, .18f, .21f);
+            Material slot = Paint(.047f, .054f, .065f);
+            Material contact = Paint(.69f, .66f, .57f);
+            contact.SetFloat("_Glossiness", .48f);
+            Material shoulder = Paint(.27f, .29f, .32f);
             Material cream = Paint(.92f, .85f, .68f);
             Box("Workshop table", new Vector3(0, -1.44f, 0), new Vector3(76, .6f, 61), Paint(.19f, .27f, .34f));
             SurfaceBox("Wooden display board", new Vector3(0, -.56f, 0), new Vector3(38, .9f, 30), new Vector2(4.1f, 1.4f), wood);
             Box("Tabletop edge band", new Vector3(0, -.25f, 0), new Vector3(38.1f, .12f, 30.1f), trim);
             Box("Felt landscape", new Vector3(0, -.105f, 0), new Vector3(36.5f, .17f, 28.5f), grass);
-            Ribbon(course, RaceCourse.HalfWidth + .21f, .024f, shoulder, "Road shoulder");
-            Ribbon(course, RaceCourse.HalfWidth, .035f, asphalt, "RC course");
+            Ribbon(course, RaceCourse.HalfWidth + .16f, .024f, shoulder, "Slot track bevel");
+            Ribbon(course, RaceCourse.HalfWidth, .035f, plastic, "Molded slot track");
+            for (int lane = 0; lane < RaceCourse.LaneCount; lane++)
+            {
+                float offset = RaceCourse.SlotOffset(lane);
+                Color color = SlotColor(lane);
+                Ribbon(course, .039f, .055f, slot, "Guide slot", offset, true);
+                Ribbon(course, .018f, .056f, contact, "Left power contact", offset - .103f, true);
+                Ribbon(course, .018f, .056f, contact, "Right power contact", offset + .103f, true);
+                Ribbon(course, .025f, .054f, Paint(color.r, color.g, color.b), "Lane stripe", offset + .34f, true);
+            }
             Material curbRed = Paint(.74f, .29f, .20f);
             for (int i = 0; i < course.Count; i += 2)
             {
@@ -171,12 +142,12 @@ namespace GarageGauntlet
                     i % 4 == 0 ? curbRed : cream, Quaternion.LookRotation(tangent));
             }
 
-            for (float distance = 1.7f; distance < course.Length - 1.2f; distance += 2.6f)
+            for (float distance = 1.7f; distance < course.Length - 1.2f; distance += 3.7f)
             {
                 Vector3 at = course.Sample(distance, out Vector3 direction);
                 if (Mathf.Abs(at.z) > 1)
-                    Box("Road marking", at + Vector3.up * .044f, new Vector3(.075f, .014f, 1.12f),
-                        cream, Quaternion.LookRotation(direction));
+                    Box("Snap track section joint", at + Vector3.up * .039f, new Vector3(4.23f, .003f, .038f),
+                        slot, Quaternion.LookRotation(direction));
             }
 
             Vector3 start = course.Sample(0, out Vector3 forward);
@@ -185,8 +156,8 @@ namespace GarageGauntlet
             for (int i = 0; i < 8; i++)
             {
                 Vector3 square = start + right * ((i - 3.5f) * .51f) + Vector3.up * .052f;
-                Box("Start check", square, new Vector3(.51f, .012f, .28f), i % 2 == 0 ? cream : asphalt, turn);
-                Box("Finish check", square + forward * .28f, new Vector3(.51f, .012f, .28f), i % 2 == 0 ? asphalt : cream, turn);
+                Box("Start check", square, new Vector3(.51f, .012f, .28f), i % 2 == 0 ? cream : plastic, turn);
+                Box("Finish check", square + forward * .28f, new Vector3(.51f, .012f, .28f), i % 2 == 0 ? plastic : cream, turn);
             }
 
             Model("toy/gate-finish", root, start + Vector3.up * .04f, new Vector3(0, turn.eulerAngles.y, 0),
@@ -272,14 +243,12 @@ namespace GarageGauntlet
         private void House(string model, float x, float z, float angle, string texture)
         {
             Vector3 position = new Vector3(x, -.025f, z);
-            housePositions.Add(position);
             Model("town/" + model, root, position, new Vector3(0, angle, 0), new Vector3(2.1f, 1.65f, 1.95f), texture);
         }
 
         private void Craftsman(float x, float z, float angle, Color tint)
         {
             Vector3 position = new Vector3(x, -.025f, z);
-            housePositions.Add(position);
             var material = new Material(Palette("realism/craftsman-palette")) { color = tint };
             Model("realism/craftsman", root, position, new Vector3(0, angle + 180, 0),
                 new Vector3(2.4f, 1.8f, 2.15f), uniform: true, finish: material);
@@ -444,30 +413,35 @@ namespace GarageGauntlet
                 front * Quaternion.Euler(0, 0, -42));
         }
 
-        private void Ribbon(RaceCourse course, float halfWidth, float y, Material material, string name)
+        private void Ribbon(RaceCourse course, float halfWidth, float y, Material material, string name,
+            float offset = 0, bool breakAtCrossing = false)
         {
             var vertices = new Vector3[course.Count * 2];
             var uv = new Vector2[vertices.Length];
-            var triangles = new int[course.Count * 6];
+            var triangles = new List<int>(course.Count * 6);
             for (int i = 0; i < course.Count; i++)
             {
                 Vector3 center = course.At(i) + Vector3.up * y;
-                Vector3 side = Vector3.Cross(Vector3.up, course.Tangent(i)) * halfWidth;
+                Vector3 tangent = Vector3.Cross(Vector3.up, course.Tangent(i));
+                center += tangent * offset;
+                Vector3 side = tangent * halfWidth;
                 int current = i * 2;
                 int next = (current + 2) % vertices.Length;
                 vertices[current] = center - side;
                 vertices[current + 1] = center + side;
                 uv[current] = new Vector2(vertices[current].x, vertices[current].z) / 2.3f;
                 uv[current + 1] = new Vector2(vertices[current + 1].x, vertices[current + 1].z) / 2.3f;
-                int triangle = i * 6;
-                triangles[triangle] = current;
-                triangles[triangle + 1] = next;
-                triangles[triangle + 2] = current + 1;
-                triangles[triangle + 3] = current + 1;
-                triangles[triangle + 4] = next;
-                triangles[triangle + 5] = next + 1;
+                if (!breakAtCrossing || (Mathf.Abs(course.At(i).z) > .8f && Mathf.Abs(course.At(i + 1).z) > .8f))
+                {
+                    triangles.Add(current);
+                    triangles.Add(next);
+                    triangles.Add(current + 1);
+                    triangles.Add(current + 1);
+                    triangles.Add(next);
+                    triangles.Add(next + 1);
+                }
             }
-            var mesh = new Mesh { name = name, vertices = vertices, triangles = triangles, uv = uv };
+            var mesh = new Mesh { name = name, vertices = vertices, triangles = triangles.ToArray(), uv = uv };
             mesh.RecalculateNormals();
             mesh.RecalculateTangents();
             Transform surface = Group(name, root);

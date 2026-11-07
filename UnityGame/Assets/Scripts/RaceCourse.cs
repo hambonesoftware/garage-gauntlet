@@ -9,6 +9,8 @@ namespace GarageGauntlet
         private readonly List<float> distances = new List<float> { 0 };
 
         public const float HalfWidth = 2.15f;
+        public const int LaneCount = 4;
+        public static float SlotOffset(int lane) => (lane - 1.5f) * 1.01f;
         public float Length => distances[points.Count];
         public int Count => points.Count;
         public IReadOnlyList<Vector3> Crossings { get; }
@@ -61,6 +63,14 @@ namespace GarageGauntlet
         {
             Vector3 center = Sample(distance, out forward);
             return center + Vector3.Cross(Vector3.up, forward) * offset;
+        }
+
+        public float Curvature(float distance)
+        {
+            const float span = 1.35f;
+            Sample(distance - span, out Vector3 before);
+            Sample(distance + span, out Vector3 after);
+            return Vector3.SignedAngle(before, after, Vector3.up) * Mathf.Deg2Rad / (2 * span);
         }
 
         public Vector3 Sample(float distance, out Vector3 direction)

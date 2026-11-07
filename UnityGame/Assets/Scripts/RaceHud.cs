@@ -11,42 +11,61 @@ namespace GarageGauntlet
         private static readonly Color Ink = new Color(.038f, .075f, .105f, .96f);
         private static readonly Color Quiet = new Color(.11f, .19f, .24f, .94f);
         private static readonly string[] Places = { "1ST", "2ND", "3RD", "4TH" };
-        private GUIStyle display, metric, body, small, label, centered, primary, secondary, padText;
+        private GUIStyle display, metric, body, small, label, centered, primary, secondary;
         private Texture2D map;
         private float Scale => Mathf.Clamp(Mathf.Min(Screen.width / 680f, Screen.height / 480f), .45f, 1.85f);
         private float Width => Screen.width / Scale;
         private float Height => Screen.height / Scale;
-        private bool ShowTouch => Application.isMobilePlatform || touchSeen;
-        private Rect Left => new Rect(16, Height - 85, 70, 65);
-        private Rect Right => new Rect(94, Height - 85, 70, 65);
-        private Rect Reverse => new Rect(Width - 233, Height - 85, 63, 65);
-        private Rect Boost => new Rect(Width - 162, Height - 85, 65, 65);
-        private Rect Gas => new Rect(Width - 89, Height - 85, 73, 65);
+        private int triggerFinger = -1;
+        private bool mouseTrigger;
+        private Rect TriggerPad => new Rect(Width - 174, Height - 141, 156, 122);
 
-        private void ReadControls(out float turn, out float throttle, out bool useBoost)
+        private void ReleaseTrigger()
         {
-            turn = Axis(KeyCode.A, KeyCode.LeftArrow, KeyCode.D, KeyCode.RightArrow);
-            throttle = Axis(KeyCode.S, KeyCode.DownArrow, KeyCode.W, KeyCode.UpArrow);
-            useBoost = Input.GetKey(KeyCode.Space) || Input.GetKey(KeyCode.LeftShift);
+            triggerFinger = -1;
+            mouseTrigger = false;
+        }
+
+        private float ReadTrigger()
+        {
+            float keyboard = Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow) || Input.GetKey(KeyCode.Space)
+                ? 1 : Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift) ? .36f : 0;
+            Rect pad = TriggerPad;
+            bool found = false;
+            float touchPower = 0;
             for (int i = 0; i < Input.touchCount; i++)
             {
                 Touch touch = Input.GetTouch(i);
                 if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
                     continue;
-                Vector2 point = new Vector2(touch.position.x / Scale, (Screen.height - touch.position.y) / Scale);
-                if (Left.Contains(point)) turn = -1;
-                if (Right.Contains(point)) turn = 1;
-                if (Reverse.Contains(point)) throttle = -1;
-                if (Gas.Contains(point)) throttle = 1;
-                if (Boost.Contains(point)) useBoost = true;
+                Vector2 point = ToHud(touch.position);
+                if (triggerFinger < 0 && touch.phase == TouchPhase.Began && pad.Contains(point))
+                    triggerFinger = touch.fingerId;
+                if (triggerFinger == touch.fingerId)
+                {
+                    found = true;
+                    touchPower = PowerAt(pad, point.y);
+                }
             }
+            if (!found)
+                triggerFinger = -1;
+            if (Input.touchCount != 0)
+            {
+                mouseTrigger = false;
+                return Mathf.Max(keyboard, touchPower);
+            }
+
+            Vector2 mouse = ToHud(Input.mousePosition);
+            if (Input.GetMouseButtonDown(0))
+                mouseTrigger = pad.Contains(mouse);
+            if (!Input.GetMouseButton(0))
+                mouseTrigger = false;
+            return Mathf.Max(keyboard, mouseTrigger ? PowerAt(pad, mouse.y) : 0);
         }
 
-        private static int Axis(KeyCode negative, KeyCode alternateNegative, KeyCode positive, KeyCode alternatePositive)
-        {
-            return (Input.GetKey(positive) || Input.GetKey(alternatePositive) ? 1 : 0)
-                - (Input.GetKey(negative) || Input.GetKey(alternateNegative) ? 1 : 0);
-        }
+        private Vector2 ToHud(Vector2 position) => new Vector2(position.x / Scale, (Screen.height - position.y) / Scale);
+        private static float PowerAt(Rect pad, float y) =>
+            Mathf.Lerp(.12f, 1, 1 - Mathf.InverseLerp(pad.y + 28, pad.yMax - 10, y));
 
         private void OnGUI()
         {
@@ -79,7 +98,7 @@ namespace GarageGauntlet
             Caption(x + 19, y + 19, width - 38, "GARAGE GAUNTLET   /   01");
             GUI.Label(new Rect(x + 18, y + 41, width - 36, 62), "Railway Rush", display);
             GUI.Label(new Rect(x + 19, y + 106, width - 38, 42),
-                "Race three laps through a model train town. Grab teal batteries and beat the field.", body);
+                "Four powered lanes. Squeeze the trigger on straights and lift before tight bends.", body);
 
             if (GUI.Button(new Rect(x + 18, y + 163, width - 36, 45), "START GRAND PRIX", primary))
                 StartRace(true);
@@ -88,9 +107,7 @@ namespace GarageGauntlet
                 StartRace(false);
             if (GUI.Button(new Rect(x + 26 + half, y + 215, half, 36), sound.Enabled ? "SOUND ON" : "SOUND OFF", secondary))
                 sound.Toggle();
-            GUI.Label(new Rect(x + 19, y + 258, width - 38, 20), ShowTouch
-                ? "Hold GO to drive. Hold BOOST with GO."
-                : "WASD / arrows to drive  •  Space to boost", small);
+            GUI.Label(new Rect(x + 19, y + 258, width - 38, 20), "W / Space for full power  •  Shift for corners", small);
         }
 
         private void DrawTelemetry()
@@ -121,33 +138,31 @@ namespace GarageGauntlet
 
         private void DrawRaceHud()
         {
-            float width = ShowTouch ? 126 : 210;
-            float height = ShowTouch ? 41 : 59;
-            float bottom = Height - (ShowTouch ? 94 : 20);
-            Rect meter = new Rect(Width / 2 - width / 2, bottom - height, width, height);
-            Card(meter, boosting ? Amber : Mint);
-            Caption(meter.x + 9, meter.y + 7, meter.width - 18, boosting ? "BOOSTING" : "BOOST");
-            Fill(new Rect(meter.x + 9, meter.y + 24, meter.width - 18, 7), Quiet);
-            Fill(new Rect(meter.x + 9, meter.y + 24, (meter.width - 18) * boost, 7), boosting ? Amber : Mint);
-            if (!ShowTouch)
-                GUI.Label(new Rect(meter.x + 9, meter.y + 34, meter.width - 18, 19), "SPACE  boost    R  recover", small);
-
-            bool warning = CrossingWarning();
-            string banner = Time.unscaledTime < noticeUntil ? notice : warning ? "TRAIN APPROACHING" : "";
+            bool train = CrossingWarning();
+            float suggestedSpeed = motor.BrakeTarget();
+            bool corner = !motor.Recovering && suggestedSpeed < SlotMotor.TopSpeed - .5f
+                && suggestedSpeed < motor.Speed + .7f;
+            string banner = Time.unscaledTime < noticeUntil ? notice
+                : train ? "TRAIN CROSSING · LIFT OFF" : corner ? "TIGHT BEND · LIFT OFF" : "";
             if (banner.Length != 0)
             {
-                Rect alert = new Rect(Width / 2 - 114, 115, 228, 35);
-                Card(alert, warning ? Amber : Mint);
+                Rect alert = new Rect(Width / 2 - 142, 116, 284, 35);
+                Card(alert, train || corner ? Amber : Mint);
                 Caption(alert.x + 11, alert.y + 9, alert.width - 22, banner);
             }
 
-            if (!ShowTouch)
-                return;
-            PadButton(Left, "LEFT", Quiet);
-            PadButton(Right, "RIGHT", Quiet);
-            PadButton(Reverse, "BRAKE", Quiet);
-            PadButton(Boost, "BOOST", boosting ? new Color(.36f, .27f, .12f) : Quiet);
-            PadButton(Gas, "GO", new Color(.09f, .31f, .26f, .96f));
+            Rect pad = TriggerPad;
+            Card(pad, corner || train ? Amber : Mint);
+            Caption(pad.x + 10, pad.y + 8, pad.width - 20, "TRIGGER   " + Mathf.RoundToInt(motor.Trigger * 100) + "%");
+            Rect guide = new Rect(pad.x + 12, pad.y + 31, 33, 75);
+            Fill(guide, Quiet);
+            float fill = guide.height * motor.Trigger;
+            Fill(new Rect(guide.x, guide.yMax - fill, guide.width, fill), corner ? Amber : Mint);
+            float safe = Mathf.Clamp01(suggestedSpeed / SlotMotor.TopSpeed);
+            Fill(new Rect(guide.x, guide.yMax - guide.height * safe, guide.width, 2), Ivory);
+            GUI.Label(new Rect(pad.x + 51, pad.y + 34, 100, 20), "SLIDE UP", small);
+            GUI.Label(new Rect(pad.x + 51, pad.y + 55, 100, 20), "TO SQUEEZE", small);
+            GUI.Label(new Rect(pad.x + 51, pad.y + 87, 101, 20), "LIFT TO BRAKE", small);
         }
 
         private void DrawPause()
@@ -158,14 +173,7 @@ namespace GarageGauntlet
             GUI.Label(new Rect(card.x + 16, card.y + 33, card.width - 32, 57), "Pit stop", display);
             if (GUI.Button(new Rect(card.x + 17, card.y + 97, card.width - 34, 40), "RESUME", primary))
                 TogglePause();
-            float half = (card.width - 42) / 2;
-            if (GUI.Button(new Rect(card.x + 17, card.y + 145, half, 34), "RECOVER", secondary))
-            {
-                if (pausedState == RaceState.Racing && recovery <= 0)
-                    ResetCar(false);
-                TogglePause();
-            }
-            if (GUI.Button(new Rect(card.x + 25 + half, card.y + 145, half, 34), "MAIN MENU", secondary))
+            if (GUI.Button(new Rect(card.x + 17, card.y + 145, card.width - 34, 34), "MAIN MENU", secondary))
                 ReturnToGrid();
         }
 
@@ -258,13 +266,6 @@ namespace GarageGauntlet
             Fill(new Rect(rect.x, rect.y, rect.width, 2), edge);
         }
 
-        private void PadButton(Rect rect, string text, Color color)
-        {
-            Fill(rect, color);
-            Fill(new Rect(rect.x, rect.y, rect.width, 2), Mint);
-            GUI.Label(rect, text, padText);
-        }
-
         private static void Fill(Rect rect, Color color)
         {
             Color previous = GUI.color;
@@ -283,8 +284,6 @@ namespace GarageGauntlet
             label = Text(13, Mint, true);
             centered = Text(48, Ivory, true);
             centered.alignment = TextAnchor.MiddleCenter;
-            padText = Text(14, Ivory, true);
-            padText.alignment = TextAnchor.MiddleCenter;
             primary = MakeButton(Mint, Ink);
             secondary = MakeButton(Quiet, Ivory);
             map = DrawMapTexture();

@@ -5,68 +5,51 @@ namespace GarageGauntlet
     internal sealed class RivalDriver
     {
         private readonly RaceCourse course;
-        private readonly float basePace, homeLane, gridDistance, phase;
-        private float speed, lane;
-        public readonly string Name;
-        public readonly Color Color;
-        public readonly Transform Car;
-        public float Distance { get; private set; }
+        private readonly ScaleRcCar model;
+        private readonly SlotMotor motor;
+        private readonly int lane;
+        private readonly float pace, phase;
+        public Color Color => RailwayTown.SlotColor(lane);
+        public Transform Car => model.Root;
+        public float Distance => motor.Distance;
         public bool Finished => Distance >= course.Length * RaceProgress.TotalLaps;
 
-        public RivalDriver(RaceCourse course, RailwayTown town, string name, Color color,
-            float basePace, float homeLane, float gridDistance, int index)
+        public RivalDriver(RaceCourse course, RailwayTown town, string name, int lane, float pace)
         {
             this.course = course;
-            this.basePace = basePace;
-            this.homeLane = homeLane;
-            this.gridDistance = gridDistance;
-            phase = index * 2.4f;
-            Name = name;
-            Color = color;
-            Car = town.CreateRacer(name, color, index + 1);
+            this.lane = lane;
+            this.pace = pace;
+            phase = lane * 2.4f;
+            motor = new SlotMotor(course, lane);
+            model = town.CreateRacer(name);
             Reset();
         }
 
         public void Reset()
         {
-            speed = 0;
-            lane = homeLane;
-            Distance = gridDistance;
-            Place();
+            motor.Reset();
+            model.ResetMotion();
+            motor.Draw(model, 0);
         }
 
-        public void Step(float dt, float elapsed, float trainX, Transform player)
+        public void Step(float dt, float elapsed, float trainX)
         {
             if (Finished)
                 return;
-            Vector3 center = course.Sample(Distance, out Vector3 forward);
-            Vector3 lookAhead = course.Sample(Distance + 3.6f, out Vector3 nextForward);
-            float bend = Mathf.Abs(Vector3.SignedAngle(forward, nextForward, Vector3.up));
-            float pace = basePace + .75f * Mathf.Sin(elapsed * .92f + phase) - Mathf.Min(bend * .046f, 2.7f);
-            if (center.z * lookAhead.z < 0 && RailwayTown.SignalClosed(trainX, lookAhead.x))
-                pace = Mathf.Clamp(Mathf.Abs(center.z) * 2.1f - 1.5f, 0, pace);
-
-            float targetLane = homeLane + .30f * Mathf.Sin(Distance * .14f + phase);
-            Vector3 difference = player.position - Car.position;
-            float ahead = Vector3.Dot(forward, difference);
-            if (ahead > 0 && ahead < 3 && difference.sqrMagnitude < 9)
+            float variation = Mathf.Sin(elapsed * 1.35f + phase) * .08f;
+            float speed = motor.BrakeTarget() * (pace + variation);
+            float offset = RaceCourse.SlotOffset(lane);
+            Vector3 current = course.Lane(Distance, offset, out _);
+            Vector3 ahead = course.Lane(Distance + 4.8f, offset, out _);
+            if (current.z * ahead.z <= 0 && RailwayTown.SignalClosed(trainX, ahead.x))
             {
-                float side = Vector3.Dot(Vector3.Cross(Vector3.up, forward), difference);
-                targetLane = side >= 0 ? -1.02f : 1.02f;
-                if (Mathf.Abs(side) < .75f)
-                    pace = Mathf.Min(pace, 5.8f);
+                float room = Mathf.Max(0, Mathf.Abs(current.z) - 1.26f);
+                speed = Mathf.Min(speed, Mathf.Sqrt(17f * room));
             }
 
-            lane = Mathf.MoveTowards(lane, targetLane, dt * 1.8f);
-            speed = Mathf.MoveTowards(speed, pace, dt * (pace < speed ? 26 : 9));
-            Distance = Mathf.Min(course.Length * RaceProgress.TotalLaps, Distance + speed * dt);
-            Place();
+            motor.Step(speed / SlotMotor.TopSpeed, dt, trainX);
         }
 
-        private void Place()
-        {
-            Vector3 position = course.Lane(Distance, lane, out Vector3 forward);
-            Car.SetPositionAndRotation(position + Vector3.up * .11f, Quaternion.LookRotation(forward));
-        }
+        public void Draw(float dt) => motor.Draw(model, dt);
     }
 }
