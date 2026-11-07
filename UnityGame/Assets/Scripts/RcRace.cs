@@ -145,14 +145,13 @@ namespace GarageGauntlet
                 foreach (RivalDriver rival in rivals)
                     rival.Step(dt, elapsed, trainX);
 
-            float previous = motor.Distance;
             SlotIncident incident = motor.Step(throttle, dt, trainX);
             if (incident != SlotIncident.None)
             {
                 sound.Signal(RaceSound.Hit);
                 Notify(incident == SlotIncident.Train ? "TRAIN HIT · RE-SLOTTING" : "DESLOTTED · EASE OFF IN TURNS");
             }
-            if (progress.Advance(previous, motor.Distance, 0))
+            if (progress.Advance(motor.Distance))
                 CompleteLap();
         }
 

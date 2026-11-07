@@ -68,7 +68,7 @@ namespace GarageGauntlet
                 return Stop(SlotIncident.Train, 1.15f, Mathf.Sign(bend));
 
             Distance = next;
-            float overspeed = Speed / LimitAt(Distance) - 1.07f;
+            float overspeed = Speed / SafeSpeed - 1.07f;
             strain = overspeed > 0 ? strain + overspeed * dt : Mathf.Max(0, strain - dt * .8f);
             return strain > .065f ? Stop(SlotIncident.Deslot, 1.0f, -Mathf.Sign(bend)) : SlotIncident.None;
         }
