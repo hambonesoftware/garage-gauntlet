@@ -22,7 +22,7 @@ namespace GarageGauntlet
             DrawTown();
             DrawRailway();
             Car = Group("RC racer", root);
-            Model("toy/vehicle-racer", Car, Vector3.zero, Vector3.zero, new Vector3(.96f, .62f, 1.6f));
+            Model("toy/vehicle-racer", Car, Vector3.zero, new Vector3(0, 180, 0), new Vector3(.96f, .62f, 1.6f));
             Train = Group("Model train", root);
             Model("train/train-locomotive-a", Train, new Vector3(1.13f, 0, 0),
                 new Vector3(0, 90, 0), new Vector3(1.05f, 1.32f, 2.1f));
