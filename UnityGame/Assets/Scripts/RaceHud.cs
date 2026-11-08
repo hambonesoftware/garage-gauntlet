@@ -157,7 +157,7 @@ namespace GarageGauntlet
             Caption(x + 19, y + 19, width - 38, "GARAGE GAUNTLET   /   01");
             GUI.Label(new Rect(x + 18, y + 41, width - 36, 62), "Railway Rush", display);
             GUI.Label(new Rect(x + 19, y + 106, width - 38, 42),
-                "Maple Junction, Michigan\nRace the town highway and its railway flyover.", body);
+                "Maple Junction · Main Street\nRace past the courthouse, theater, and railway.", body);
 
             if (GUI.Button(new Rect(x + 18, y + 163, width - 36, 45), "START GRAND PRIX", primary))
                 StartRace(true);

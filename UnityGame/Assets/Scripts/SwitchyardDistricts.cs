@@ -21,10 +21,11 @@ namespace GarageGauntlet
             Material plaster = Paint(.77f, .66f, .47f);
             Material tile = Surface("roof", new Color(.70f, .65f, .61f), .25f);
             Material stucco = Surface("brick", new Color(.65f, .72f, .72f), .22f);
+            Material brownstone = Surface("brick", new Color(.72f, .60f, .51f), .19f);
             brick.SetFloat("_Glossiness", .24f);
             string[] names = { "BAKERY", "MODEL SHOP", "POST OFFICE", "DINER", "BOOKS", "HARDWARE", "MARKET", "CAFE" };
             Material[] awnings = { red, green, blue, red, blue, green, red, blue };
-            float[] eaves = { 2.05f, 1.83f, 2.48f, 1.63f, 2.29f, 1.87f, 2.37f, 1.65f };
+            float[] eaves = { 2.56f, 2.83f, 3.36f, 2.38f, 2.29f, 2.61f, 2.37f, 1.95f };
 
             for (int row = 0; row < 2; row++)
             {
@@ -41,14 +42,24 @@ namespace GarageGauntlet
                     float back = z - face * 1.02f;
                     Vector3 center = new Vector3(x, height / 2 + .035f, z);
                     Vector3 walls = new Vector3(3.25f, height, 2.04f);
-                    Material shell = shop == 2 || shop == 6 ? stucco : brick;
-                    bool pitched = shop == 1 || shop == 4 || shop == 6;
-                    if (shop == 3 || shop == 7)
+                    Material shell = shop == 6 ? stucco : shop == 1 || shop == 5 ? brownstone : brick;
+                    bool pitched = shop == 4 || shop == 6;
+                    if (shop == 7)
                         Box(names[shop] + " plaster walls", center, walls, plaster);
                     else
                         SurfaceBox(names[shop] + " molded masonry", center, walls, new Vector2(.62f, .62f), shell);
                     Box("Molded foundation lip", new Vector3(x, .09f, z), new Vector3(3.34f, .17f, 2.12f), pavement);
                     DrawShopRoof(x, z, height + .035f, face, pitched, shop == 2 || shop == 0, shell, tile, roof, cream);
+
+                    if (row == 0)
+                    {
+                        Box("Pressed storefront lintel", new Vector3(x, 1.45f, front - .06f), new Vector3(3.25f, .09f, .13f), cream);
+                        if (i < 3)
+                            Box("Shared brick party wall", new Vector3(x + 1.825f, Mathf.Min(height, eaves[shop + 1]) / 2, z + .03f),
+                                new Vector3(.43f, Mathf.Min(height, eaves[shop + 1]), 1.97f), shell);
+                        Box("Masonry corner pier", new Vector3(x - 1.51f, .80f, front - .055f), new Vector3(.11f, 1.53f, .13f), cream);
+                        Box("Masonry corner pier", new Vector3(x + 1.51f, .80f, front - .055f), new Vector3(.11f, 1.53f, .13f), cream);
+                    }
 
                     for (int side = -1; side <= 1; side += 2)
                     {
@@ -56,6 +67,8 @@ namespace GarageGauntlet
                         ShopWindow(wx, .56f, front, face, .99f, .72f, cream, shop % 2 == 0 ? lit : glass);
                         if (height > 1.75f)
                             ShopWindow(wx, height - .36f, front, face, .58f, .43f, cream, glass);
+                        if (shop == 2)
+                            ShopWindow(wx, 2.29f, front, face, .62f, .50f, cream, lit);
                         ShopWindow(wx, height - .47f, back, -face, .56f, .49f, cream, glass);
                     }
                     Box("Recessed shop door", new Vector3(x, .53f, front + face * .035f), new Vector3(.53f, .95f, .065f), awnings[shop]);
@@ -110,6 +123,8 @@ namespace GarageGauntlet
                         if (block == 0 && lot == 1)
                             continue;
                         float x = center + (lot - 1) * 4.18f;
+                        if (block == 0 && side == -1 && lot == 2)
+                            x -= 1.2f;
                         float z = lane + side * spacing;
                         Craftsman(x, z, side == 1 ? 0 : 180, walls[(block + lot + (side + 1) / 2) % walls.Length]);
                         Box("Front garden path", new Vector3(x, .018f, (z + lane + side * .84f) / 2),

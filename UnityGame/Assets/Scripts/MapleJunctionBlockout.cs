@@ -66,8 +66,7 @@ namespace GarageGauntlet
             LayMapleStreet("Mill Pond trail", MapleJunctionPlan.MillWalk, .83f, walks);
             LayMapleStreet("Farm service road", MapleJunctionPlan.FarmLane, 1.48f, gravel);
 
-            ReserveLot("Maple Theater", 15, -17.15f, new Vector3(3.5f, 2.25f, 2.4f), brick, roof, walks);
-            ReserveLot("Service station", 25, -17.25f, new Vector3(3.3f, 1.48f, 2.15f), siding, roof, walks);
+            DrawDanvilleLandmarks();
             Box("Service forecourt", new Vector3(24.9f, .020f, -18.55f), new Vector3(4.3f, .047f, 1.1f), walks);
             DrawHighwayFrontage(course, asphalt, walks, roof);
 
@@ -115,7 +114,7 @@ namespace GarageGauntlet
         {
             const float parkingOffset = -2.67f;
             Material paint = Paint(.89f, .87f, .77f);
-            var parking = new Vector2[23];
+            var parking = new Vector2[19];
             for (int i = 0; i < parking.Length; i++)
             {
                 Vector3 point = course.Lane(i - 2, parkingOffset, out _);
@@ -123,7 +122,7 @@ namespace GarageGauntlet
             }
             LayMapleStreet("Main Street curb parking", parking, 1.07f, asphalt);
 
-            for (float distance = .8f; distance < 19; distance += 2.7f)
+            for (float distance = .8f; distance < 16.5f; distance += 2.7f)
             {
                 if (Mathf.Abs(distance - 12) < 1.6f)
                     continue;
@@ -134,9 +133,10 @@ namespace GarageGauntlet
                 Box("Concrete parking curb", curb + Vector3.up * .065f, new Vector3(.14f, .13f, 2.48f), concrete, turn);
             }
 
+            foreach (float center in new[] { 12f, 19.2f })
             for (int stripe = -1; stripe <= 1; stripe += 2)
             {
-                Vector3 crossing = course.Sample(12 + stripe * .55f, out Vector3 direction);
+                Vector3 crossing = course.Sample(center + stripe * .55f, out Vector3 direction);
                 Box("Main Street crosswalk line", crossing + Vector3.up * .064f,
                     new Vector3(4.18f, .01f, .13f), paint, Quaternion.LookRotation(direction));
             }
@@ -153,7 +153,7 @@ namespace GarageGauntlet
             Material glazing = Paint(.18f, .25f, .28f);
             Material tires = Paint(.087f, .083f, .074f);
             DrawParkedCar(4.85f, Paint(.44f, .57f, .62f));
-            DrawParkedCar(17.4f, Paint(.56f, .29f, .22f));
+            DrawParkedCar(14.9f, Paint(.56f, .29f, .22f));
 
             void DrawParkedCar(float distance, Material body)
             {
