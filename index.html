@@ -32,7 +32,7 @@
       <progress id="progress" aria-label="Game loading" value="0" max="1"></progress>
     </div>
   </section>
-  <script src="Build/b7aec164782657c4ad5fa8b634e67aec.loader.js"></script>
+  <script src="Build/371f28ffae09d2692d979404f9146169.loader.js"></script>
   <script>
     const canvas = document.querySelector("#race");
     const loading = document.querySelector("#loading");
@@ -42,14 +42,15 @@
     async function loadRace() {
       try {
         await createUnityInstance(canvas, {
-          dataUrl: "Build/fd71df3fb9963cdf643695616041144a.data.unityweb",
+          dataUrl: "Build/8eac6bac0f41b591fa1de5cbdb15085a.data.unityweb",
           frameworkUrl: "Build/d9bd202a7fffbb7d5bae8e7d29cb6fc6.framework.js.unityweb",
-          codeUrl: "Build/178de56b729d107a181ac685f5bdf0c3.wasm.unityweb",
+          codeUrl: "Build/05e68d245b82fe93b7bdcd1c4af413b8.wasm.unityweb",
           streamingAssetsUrl: "StreamingAssets",
           companyName: "Garage Gauntlet",
           productName: "Railway Rush",
           productVersion: "1.0",
-          devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5)
+          devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2,
+            Math.max(1, Math.sqrt(1800000 / (window.innerWidth * window.innerHeight))))
         }, value => { progress.value = value; });
         loading.hidden = true;
         canvas.focus();
