@@ -25,10 +25,13 @@ namespace GarageGauntlet
             new District("OUTSKIRTS", 8, 35)
         };
 
-        public static readonly Vector2[] MainStreet =
+        public static readonly Vector2[] WestTownApproach =
         {
-            new Vector2(-8.5f, -14.1f), new Vector2(-7, -16.6f), new Vector2(-7, -19.15f),
-            new Vector2(27, -19.15f), new Vector2(28.3f, -16.3f), new Vector2(28, -10.55f)
+            new Vector2(-8.5f, -14.1f), new Vector2(-4.25f, -16.6f), new Vector2(-4.25f, -19.94f)
+        };
+        public static readonly Vector2[] EastTownApproach =
+        {
+            new Vector2(28, -10.55f), new Vector2(28.3f, -16.3f), new Vector2(28.3f, -19.69f)
         };
         public static readonly Vector2[] CottageLane =
         {

@@ -125,24 +125,15 @@ namespace GarageGauntlet
             for (int lane = 0; lane < RaceCourse.LaneCount; lane++)
             {
                 float offset = RaceCourse.SlotOffset(lane);
-                Color color = SlotColor(lane);
                 Ribbon(course, .039f, .055f, slot, "Guide slot", offset, true);
                 Ribbon(course, .018f, .056f, contact, "Left power contact", offset - .103f, true);
                 Ribbon(course, .018f, .056f, contact, "Right power contact", offset + .103f, true);
-                Ribbon(course, .025f, .054f, Paint(color.r, color.g, color.b), "Lane stripe", offset + .34f, true);
             }
-            Material curbRed = Paint(.74f, .29f, .20f);
-            for (int i = 0; i < course.Count; i += 2)
+            Material yellow = Paint(.95f, .68f, .20f);
+            for (int side = -1; side <= 1; side += 2)
             {
-                Vector3 at = course.Sample(course.DistanceAt(i), out Vector3 tangent);
-                if (NearCrossing(course, course.DistanceAt(i), 2.4f) ||
-                    Mathf.Abs(Vector3.SignedAngle(course.Tangent(i - 2), course.Tangent(i + 2), Vector3.up)) < 10)
-                    continue;
-                Vector3 side = Vector3.Cross(Vector3.up, tangent) * (RaceCourse.HalfWidth + .03f);
-                Box("Corner curb", at + side + Vector3.up * .065f, new Vector3(.27f, .09f, .61f),
-                    i % 4 == 0 ? curbRed : cream, Quaternion.LookRotation(tangent));
-                Box("Corner curb", at - side + Vector3.up * .065f, new Vector3(.27f, .09f, .61f),
-                    i % 4 == 0 ? curbRed : cream, Quaternion.LookRotation(tangent));
+                Ribbon(course, .036f, .057f, yellow, "Highway double yellow centerline", side * .090f, true);
+                Ribbon(course, .035f, .057f, cream, "Highway white edge line", side * 2.04f, true);
             }
 
             for (float distance = 1.7f; distance < course.Length - 1.2f; distance += 3.7f)

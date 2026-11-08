@@ -59,7 +59,8 @@ namespace GarageGauntlet
             Material crops = Paint(.46f, .46f, .24f);
             Material soil = Paint(.41f, .34f, .23f);
 
-            LayMapleStreet("Main Street", MapleJunctionPlan.MainStreet, 1.15f, asphalt);
+            LayMapleStreet("West town approach", MapleJunctionPlan.WestTownApproach, 1.15f, asphalt);
+            LayMapleStreet("East town approach", MapleJunctionPlan.EastTownApproach, 1.15f, asphalt);
             LayMapleStreet("Cottage Lane", MapleJunctionPlan.CottageLane, 1.38f, asphalt);
             LayMapleStreet("Freight access", MapleJunctionPlan.FreightLane, 1.48f, gravel);
             LayMapleStreet("Mill Pond trail", MapleJunctionPlan.MillWalk, .83f, walks);
@@ -68,9 +69,7 @@ namespace GarageGauntlet
             ReserveLot("Maple Theater", 15, -17.15f, new Vector3(3.5f, 2.25f, 2.4f), brick, roof, walks);
             ReserveLot("Service station", 25, -17.25f, new Vector3(3.3f, 1.48f, 2.15f), siding, roof, walks);
             Box("Service forecourt", new Vector3(24.9f, .020f, -18.55f), new Vector3(4.3f, .047f, 1.1f), walks);
-            for (int stall = 0; stall < 7; stall++)
-                Box("Parallel parking marking", new Vector3(12.4f + stall * 1.55f, .044f, -19.52f),
-                    new Vector3(.055f, .009f, .32f), walks);
+            DrawHighwayFrontage(course, asphalt, walks, roof);
 
             ReserveLot("Hill cottage west", 18.4f, 14.0f, new Vector3(2.25f, 1.43f, 1.85f), siding, roof, walks);
             ReserveLot("Hill cottage bend", 24.3f, 13.5f, new Vector3(2.25f, 1.55f, 1.8f), brick, roof, walks);
@@ -109,6 +108,63 @@ namespace GarageGauntlet
                 course.Railway.Path.Locate(point, out float railClearance);
                 if (slotClearance > RaceCourse.HalfWidth + 1.1f && railClearance > 1.55f)
                     DrawFlockedTree(point, tree++);
+            }
+        }
+
+        private void DrawHighwayFrontage(RaceCourse course, Material asphalt, Material concrete, Material posts)
+        {
+            const float parkingOffset = -2.67f;
+            Material paint = Paint(.89f, .87f, .77f);
+            var parking = new Vector2[23];
+            for (int i = 0; i < parking.Length; i++)
+            {
+                Vector3 point = course.Lane(i - 2, parkingOffset, out _);
+                parking[i] = new Vector2(point.x, point.z);
+            }
+            LayMapleStreet("Main Street curb parking", parking, 1.07f, asphalt);
+
+            for (float distance = .8f; distance < 19; distance += 2.7f)
+            {
+                if (Mathf.Abs(distance - 12) < 1.6f)
+                    continue;
+                Vector3 stall = course.Lane(distance, parkingOffset, out Vector3 direction);
+                Quaternion turn = Quaternion.LookRotation(direction);
+                Box("Parallel parking stall end", stall + Vector3.up * .057f, new Vector3(.81f, .009f, .052f), paint, turn);
+                Vector3 curb = course.Lane(distance, -3.20f, out _);
+                Box("Concrete parking curb", curb + Vector3.up * .065f, new Vector3(.14f, .13f, 2.48f), concrete, turn);
+            }
+
+            for (int stripe = -1; stripe <= 1; stripe += 2)
+            {
+                Vector3 crossing = course.Sample(12 + stripe * .55f, out Vector3 direction);
+                Box("Main Street crosswalk line", crossing + Vector3.up * .064f,
+                    new Vector3(4.18f, .01f, .13f), paint, Quaternion.LookRotation(direction));
+            }
+
+            float stationDistance = course.Locate(new Vector3(25.0f, 0, -22.2f), out _);
+            Vector3 entrance = course.Lane(stationDistance, -RaceCourse.HalfWidth - .06f, out _);
+            LayMapleStreet("Service station curb cut", new[] { new Vector2(24.9f, -18.65f), new Vector2(entrance.x, entrance.z) },
+                1.42f, concrete);
+
+            Vector3 sign = course.Lane(20.6f, -3.43f, out _);
+            Box("Highway speed sign post", sign + Vector3.up * .52f, new Vector3(.058f, 1.04f, .058f), posts);
+            TownSign("25 MPH", sign + Vector3.up * 1.02f, .62f, .29f, -1, paint);
+
+            Material glazing = Paint(.18f, .25f, .28f);
+            Material tires = Paint(.087f, .083f, .074f);
+            DrawParkedCar(4.85f, Paint(.44f, .57f, .62f));
+            DrawParkedCar(17.4f, Paint(.56f, .29f, .22f));
+
+            void DrawParkedCar(float distance, Material body)
+            {
+                Vector3 position = course.Lane(distance, parkingOffset, out Vector3 direction);
+                Quaternion rotation = Quaternion.LookRotation(direction);
+                Box("Parked model car body", position + Vector3.up * .27f, new Vector3(.64f, .25f, 1.45f), body, rotation);
+                Box("Parked model car glazing", position + Vector3.up * .44f, new Vector3(.49f, .20f, .73f), glazing, rotation);
+                Box("Parked model car roof", position + Vector3.up * .55f, new Vector3(.52f, .065f, .72f), body, rotation);
+                for (int axle = -1; axle <= 1; axle += 2)
+                    Box("Parked model car wheels", position + Vector3.up * .14f + direction * (axle * .48f),
+                        new Vector3(.69f, .17f, .22f), tires, rotation);
             }
         }
 

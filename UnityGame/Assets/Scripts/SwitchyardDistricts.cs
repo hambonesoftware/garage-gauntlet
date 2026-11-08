@@ -29,7 +29,7 @@ namespace GarageGauntlet
             for (int row = 0; row < 2; row++)
             {
                 int face = -1;
-                float z = row == 0 ? -17.75f : -12.15f;
+                float z = row == 0 ? -16.98f : -12.15f;
                 Box("Main Street sidewalk", new Vector3(4.25f, .013f, z + face * 1.14f),
                     new Vector3(15.25f, .07f, 1.32f), pavement);
                 for (int i = 0; i < 4; i++)
@@ -76,8 +76,8 @@ namespace GarageGauntlet
                     StreetLamp(.63f + i * 3.65f, z + face * 1.62f, roof, lit);
             }
 
-            TownSign("MAPLE JUNCTION", new Vector3(-4.12f, 1.06f, -18.15f), 2.32f, .32f, -1, cream);
-            Box("Welcome sign post", new Vector3(-4.12f, .57f, -18.11f), new Vector3(.09f, 1.06f, .09f), roof);
+            TownSign("MAPLE JUNCTION", new Vector3(-5.91f, 1.06f, -18.15f), 2.32f, .32f, -1, cream);
+            Box("Welcome sign post", new Vector3(-5.91f, .57f, -18.11f), new Vector3(.09f, 1.06f, .09f), roof);
         }
 
         private void DrawTownBlocks(RaceCourse course)

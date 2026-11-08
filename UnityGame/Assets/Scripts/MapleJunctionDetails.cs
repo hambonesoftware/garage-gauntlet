@@ -26,10 +26,10 @@ namespace GarageGauntlet
             for (int i = 0; i < 4; i++)
             {
                 float x = .625f + i * 3.65f;
-                Box("Main Street planter", new Vector3(x, .17f, -18.68f),
+                Box("Main Street planter", new Vector3(x, .17f, -17.91f),
                     new Vector3(.38f, .30f, .28f), planter);
                 for (int p = 0; p < 3; p++)
-                    Box("Main Street planted hedge", new Vector3(x + (p - 1) * .10f, .37f, -18.68f),
+                    Box("Main Street planted hedge", new Vector3(x + (p - 1) * .10f, .37f, -17.91f),
                         new Vector3(.13f, .22f, .21f), leaves);
             }
             for (int i = 0; i < 3; i++)
@@ -40,11 +40,11 @@ namespace GarageGauntlet
                 Box("Bin lid", new Vector3(x, .55f, -10.88f),
                     new Vector3(.38f, .055f, .39f), asphalt);
             }
-            Box("Downtown fire hydrant stem", new Vector3(-3.2f, .22f, -18.65f),
+            Box("Downtown fire hydrant stem", new Vector3(-3.2f, .22f, -18.42f),
                 new Vector3(.17f, .38f, .17f), red);
-            Box("Downtown fire hydrant cap", new Vector3(-3.2f, .43f, -18.65f),
+            Box("Downtown fire hydrant cap", new Vector3(-3.2f, .43f, -18.42f),
                 new Vector3(.25f, .10f, .25f), red);
-            Box("Downtown fire hydrant arms", new Vector3(-3.2f, .29f, -18.65f),
+            Box("Downtown fire hydrant arms", new Vector3(-3.2f, .29f, -18.42f),
                 new Vector3(.35f, .10f, .13f), red);
             // A removable miniature-town wayfinding board at the square.
             Box("Town directory board", new Vector3(4.18f, .85f, 5.55f),

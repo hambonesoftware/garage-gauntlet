@@ -2,13 +2,13 @@
 
 ![North-up Maple Junction master plan](MapleJunctionMap.svg)
 
-Maple Junction is a fictional Michigan town built around a depot, a lumber spur, and a millpond. In its fictional history, the depot came first. Main Street grew on the dry ground south of the tracks, workers built cottages uphill to the east, and the town later turned the old millpond into a public park. The race circuit is the modeler's latest addition, threaded through a layout that has visibly accumulated repairs and additions over time.
+Maple Junction is a fictional Michigan town built around a depot, a lumber spur, and a millpond. In its fictional history, the depot came first. The through-highway became Main Street on the dry ground south of the tracks, workers built cottages uphill to the east, and the town later turned the old millpond into a public park. The modeler fitted four racing slots into the highway surface.
 
 The 98 × 86 layout-unit board keeps the original Switchyard station, freight structures, active railway, crossings, flyover, and wooden benchwork. North is positive Z. The road and rail curves in the overhead drawing come from the playable layout. Smaller rectangles reserve building footprints for later art passes.
 
 | District | Place and purpose | Reserved work |
 | --- | --- | --- |
-| Main Street | South of the railway. The slot straight runs beside the shops, with a service lane behind them and a civic approach toward the hall. | The diner and hardware store anchor the existing frontage. Theater and filling-station lots extend it east. Complete a coordinated dozen-building block with storefront glazing, curb parking, street furniture, and pedestrians. |
+| Main Street | The through-highway doubles as the slot straight. The shops face the highway across curb parking and sidewalks, with a service lane behind them and a civic approach toward the hall. | The diner and hardware store anchor the existing frontage. Theater and filling-station lots extend it east. Complete a coordinated dozen-building block with storefront glazing, street furniture, and pedestrians. |
 | Cottage Hill | East of the pond. A winding lane climbs into residential lots while the slot track bends along the ridge. | Individual porches, garage courts, gardens, driveways, leaning fences, sheds, and mailboxes. Keep tall trees behind the racing sightline. |
 | Switchyard | The depot, freight sheds, and working railway organize the west side. Freight access comes up from the south. | Warehouse and loading apron, lumber racks, engine servicing, and trackside clutter. Preserve the two active grade crossings and the raised flyover above both sides of the turnaround. |
 | Mill Pond | The low ground between the depot and Cottage Hill. A park trail links the civic space to the hillside. | Keep the fishing pier and reserve the picnic shelter, drainage channel, and footbridge. Add ground foam at the banks and a worn path between the shelter and water. |
