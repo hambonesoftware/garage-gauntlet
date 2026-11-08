@@ -1,6 +1,6 @@
 # Garage Gauntlet · Railway Rush
 
-Race a die-cast slot car around a four-lane circuit in a tabletop railway town. The three-lap Grand Prix pits you against Ember, Switch, and Volt. Time Trial gives you the same circuit on your own with a separate personal best. The game runs locally in Unity or in the browser.
+Race a die-cast slot car through Switchyard on a four-lane tabletop circuit. The route runs between the Main Street shops, around Mill Pond and the town square, past Cottage Hill, and across the railway by the freight depot. The three-lap Grand Prix pits you against Ember, Switch, and Volt. Time Trial gives you the same circuit on your own with a separate personal best. The game runs locally in Unity or in the browser.
 
 ## Play in Unity
 
@@ -8,7 +8,7 @@ Race a die-cast slot car around a four-lane circuit in a tabletop railway town. 
 2. Open `Assets/Scenes/RailwayRush.unity` and press **Play**.
 3. Hold **W**, **Up Arrow**, or **Space** for full throttle. Use **Shift** for corner pace. On touch screens or with a mouse, press the tall on-screen **Trigger** and drag up for more power or down to ease off. The middle range gives you more room to fine-tune your speed. Release to brake. **Esc** or **P** pauses, **M** toggles sound, and **Enter** starts or repeats a race.
 
-Each car follows its own slot by its front guide. The rear swings outward in fast turns. Ease off the trigger to settle the tail before the guide pops out. Lift when the crossing lights flash. A car that jumps its slot or hits the train is automatically re-slotted after a delay. Slot racing has its own personal-best records.
+Each car follows its own slot by its front guide. The rear swings outward in fast turns. Ease off the trigger to settle the tail before the guide pops out. Lift when the crossing lights flash. A car that jumps its slot or hits the train is automatically re-slotted after a delay. Switchyard has separate personal-best records for its longer route.
 
 ## Publish to GitHub Pages
 

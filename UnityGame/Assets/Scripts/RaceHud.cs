@@ -127,12 +127,12 @@ namespace GarageGauntlet
         {
             float width = Mathf.Min(380, Width - 32);
             float x = Width >= 790 ? 26 : (Width - width) / 2;
-            float y = Height / 2 - 144;
+            float y = Screen.height > Screen.width ? 22 : Height / 2 - 144;
             Card(new Rect(x, y, width, 288), Mint);
             Caption(x + 19, y + 19, width - 38, "GARAGE GAUNTLET   /   01");
             GUI.Label(new Rect(x + 18, y + 41, width - 36, 62), "Railway Rush", display);
             GUI.Label(new Rect(x + 19, y + 106, width - 38, 42),
-                "Four powered lanes. Squeeze the trigger on straights and lift before tight bends.", body);
+                "Race through Switchyard, from the Main Street shops to Mill Pond and the railway depot.", body);
 
             if (GUI.Button(new Rect(x + 18, y + 163, width - 36, 45), "START GRAND PRIX", primary))
                 StartRace(true);
@@ -278,7 +278,8 @@ namespace GarageGauntlet
         }
 
         private static Vector2 MapPoint(Vector3 position) => new Vector2(
-            Mathf.Clamp01((position.x + 17) / 34), Mathf.Clamp01((12.5f - position.z) / 25));
+            Mathf.Clamp01(.5f + position.x / (2 * RaceCourse.BoardHalfWidth)),
+            Mathf.Clamp01(.5f - position.z / (2 * RaceCourse.BoardHalfDepth)));
 
         private static void Dot(Rect route, Vector3 position, Color color, float size)
         {

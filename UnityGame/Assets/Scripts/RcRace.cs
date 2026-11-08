@@ -4,8 +4,8 @@ namespace GarageGauntlet
 {
     public sealed partial class RcRace : MonoBehaviour
     {
-        private const string TrialBestKey = "garage-gauntlet-slot-trial-v1";
-        private const string PrixBestKey = "garage-gauntlet-slot-prix-v1";
+        private const string TrialBestKey = "garage-gauntlet-slot-trial-switchyard";
+        private const string PrixBestKey = "garage-gauntlet-slot-prix-switchyard";
         private const float MaximumStep = .025f;
         private enum RaceState { Ready, Countdown, Racing, Paused, Finished }
 
@@ -62,7 +62,7 @@ namespace GarageGauntlet
             record = false;
             notice = string.Empty;
             noticeUntil = 0;
-            trainX = -23;
+            trainX = -RailwayTown.TrainEnd;
             town.UpdateTrain(trainX, 0, 1);
             foreach (RivalDriver rival in rivals)
             {
@@ -140,7 +140,7 @@ namespace GarageGauntlet
         private void Step(float throttle, float dt)
         {
             elapsed += dt;
-            trainX = -23 + Mathf.Repeat(elapsed * 5.65f, 49);
+            trainX = -RailwayTown.TrainEnd + Mathf.Repeat(elapsed * 5.65f, RailwayTown.TrainEnd * 2);
             town.UpdateTrain(trainX, elapsed, dt);
             if (grandPrix)
                 foreach (RivalDriver rival in rivals)
@@ -219,10 +219,11 @@ namespace GarageGauntlet
             float aspect = Screen.width / (float)Mathf.Max(1, Screen.height);
             bool overview = state == RaceState.Ready;
             Vector3 target = overview ? Vector3.zero : car.position + car.forward * motor.Speed * .125f;
-            float size = overview ? Mathf.Max(16.2f, 19f / aspect) : Mathf.Max(7.45f, 5.8f / aspect);
+            float size = overview ? Mathf.Max(25.5f, 34f / aspect) : Mathf.Max(7.45f, 5.8f / aspect);
             Vector3 offset = new Vector3(5, 15, -12);
             float blend = snap ? 1 : 1 - Mathf.Exp(-6 * Time.deltaTime);
-            raceCamera.transform.position = Vector3.Lerp(raceCamera.transform.position, target + offset, blend);
+            Vector3 cameraTarget = target + offset * (overview ? 2.25f : 1);
+            raceCamera.transform.position = Vector3.Lerp(raceCamera.transform.position, cameraTarget, blend);
             raceCamera.transform.rotation = Quaternion.LookRotation(-offset);
             raceCamera.orthographicSize = Mathf.Lerp(raceCamera.orthographicSize, size, blend);
         }

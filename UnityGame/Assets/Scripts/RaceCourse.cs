@@ -10,6 +10,8 @@ namespace GarageGauntlet
 
         public const float HalfWidth = 2.15f;
         public const int LaneCount = 4;
+        public const float BoardHalfWidth = 28.5f;
+        public const float BoardHalfDepth = 21.5f;
         public static float SlotOffset(int lane) => (lane - 1.5f) * 1.01f;
         public float Length => distances[points.Count];
         public int Count => points.Count;
@@ -19,9 +21,12 @@ namespace GarageGauntlet
         {
             Vector3[] corners =
             {
-                Point(0, -8), Point(10, -8), Point(13, -4), Point(12, 3),
-                Point(8, 8), Point(1, 7), Point(-5, 10), Point(-12, 7),
-                Point(-13, 0), Point(-11, -6), Point(-6, -8)
+                Point(0, -11), Point(6, -11), Point(12, -11), Point(17, -8),
+                Point(20, -3), Point(20, 3), Point(23, 9), Point(21, 15),
+                Point(15, 16), Point(9, 13), Point(4, 8), Point(-1, 8),
+                Point(-6, 12), Point(-13, 16), Point(-20, 14), Point(-23, 9),
+                Point(-22, 3), Point(-22, -3), Point(-22, -9), Point(-18, -15),
+                Point(-11, -16), Point(-6, -12)
             };
             for (int i = 0; i < corners.Length; i++)
             {
@@ -29,9 +34,9 @@ namespace GarageGauntlet
                 Vector3 b = corners[i];
                 Vector3 c = corners[(i + 1) % corners.Length];
                 Vector3 d = corners[(i + 2) % corners.Length];
-                for (int step = 0; step < 10; step++)
+                for (int step = 0; step < 12; step++)
                 {
-                    float t = step / 10f;
+                    float t = step / 12f;
                     points.Add(.5f * (2 * b + (c - a) * t +
                         (2 * a - 5 * b + 4 * c - d) * t * t +
                         (3 * b - a - 3 * c + d) * t * t * t));

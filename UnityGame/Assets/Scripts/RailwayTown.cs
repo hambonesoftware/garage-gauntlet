@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace GarageGauntlet
 {
-    internal sealed class RailwayTown
+    internal sealed partial class RailwayTown
     {
         private readonly Transform root;
         private readonly Shader shader;
@@ -12,6 +12,7 @@ namespace GarageGauntlet
         private readonly Dictionary<Material, List<CombineInstance>> scenery = new Dictionary<Material, List<CombineInstance>>();
         private Mesh cube;
         private Material signalOff, signalRed;
+        public const float TrainEnd = RaceCourse.BoardHalfWidth + 5.5f;
         private sealed class CrossingSignal
         {
             public float CrossingX;
@@ -30,7 +31,7 @@ namespace GarageGauntlet
             this.shader = shader != null ? shader : Shader.Find("Standard");
             SetupLighting();
             DrawBoard(course);
-            DrawTown();
+            DrawTown(course);
             DrawRailway(course);
             CombineScenery();
             PlayerModel = new ScaleRcCar(root, this.shader);
@@ -67,7 +68,7 @@ namespace GarageGauntlet
         public void UpdateTrain(float x, float elapsed, float dt)
         {
             Train.position = new Vector3(x, .13f, 0);
-            bool visible = x > -21 && x < 23;
+            bool visible = x > -RaceCourse.BoardHalfWidth - 2.65f && x < RaceCourse.BoardHalfWidth + 4.65f;
             if (Train.gameObject.activeSelf != visible)
                 Train.gameObject.SetActive(visible);
             bool flash = (int)(elapsed * 7) % 2 == 0;
@@ -112,10 +113,12 @@ namespace GarageGauntlet
             contact.SetFloat("_Glossiness", .48f);
             Material shoulder = Paint(.27f, .29f, .32f);
             Material cream = Paint(.92f, .85f, .68f);
-            Box("Workshop table", new Vector3(0, -1.44f, 0), new Vector3(76, .6f, 61), Paint(.19f, .27f, .34f));
-            SurfaceBox("Wooden display board", new Vector3(0, -.56f, 0), new Vector3(38, .9f, 30), new Vector2(4.1f, 1.4f), wood);
-            Box("Tabletop edge band", new Vector3(0, -.25f, 0), new Vector3(38.1f, .12f, 30.1f), trim);
-            Box("Felt landscape", new Vector3(0, -.105f, 0), new Vector3(36.5f, .17f, 28.5f), grass);
+            float width = 2 * RaceCourse.BoardHalfWidth;
+            float depth = 2 * RaceCourse.BoardHalfDepth;
+            Box("Workshop table", new Vector3(0, -1.44f, 0), new Vector3(width + 24, .6f, depth + 20), Paint(.19f, .27f, .34f));
+            SurfaceBox("Wooden display board", new Vector3(0, -.56f, 0), new Vector3(width, .9f, depth), new Vector2(4.1f, 1.4f), wood);
+            Box("Tabletop edge band", new Vector3(0, -.25f, 0), new Vector3(width + .1f, .12f, depth + .1f), trim);
+            Box("Felt landscape", new Vector3(0, -.105f, 0), new Vector3(width - .3f, .17f, depth - .3f), grass);
             Ribbon(course, RaceCourse.HalfWidth + .16f, .024f, shoulder, "Slot track bevel");
             Ribbon(course, RaceCourse.HalfWidth, .035f, plastic, "Molded slot track");
             for (int lane = 0; lane < RaceCourse.LaneCount; lane++)
@@ -172,21 +175,13 @@ namespace GarageGauntlet
             }
         }
 
-        private void DrawTown()
+        private void DrawTown(RaceCourse course)
         {
-            Material water = Paint(.21f, .54f, .62f);
-            Material pondEdge = Paint(.59f, .69f, .42f);
-            Box("Pond bank", new Vector3(5, .015f, 3.7f), new Vector3(4.4f, .1f, 3.0f), pondEdge);
-            Box("Model pond", new Vector3(5, .067f, 3.7f), new Vector3(3.95f, .025f, 2.55f), water);
-            House("building-type-a", -7.1f, 3.1f, 125, "variation-b");
-            House("building-type-d", -3.9f, 5.4f, 176, "variation-c");
-            House("building-type-g", -.1f, 3.4f, 180, "colormap");
-            House("building-type-m", -7.4f, -3.6f, 22, "variation-c");
-            Craftsman(-3.8f, -3.5f, 5, new Color(.91f, .78f, .69f));
-            Craftsman(-.4f, -3.8f, 0, Color.white);
-            Craftsman(3.2f, -3.9f, 348, new Color(.78f, .88f, .89f));
-            House("building-type-m", 7.3f, -3.2f, 340, "variation-b");
-
+            DrawMainStreet();
+            DrawTownSquare();
+            DrawMillPond();
+            DrawDepotYard();
+            DrawCottageHill(course);
             DrawBrickStation();
             Material platform = Surface("timber", new Color(.83f, .77f, .65f), .13f);
             Material canopy = Paint(.26f, .35f, .43f);
@@ -216,27 +211,6 @@ namespace GarageGauntlet
                 Box("Platform bench back", new Vector3(x, .52f, 1.83f), new Vector3(.96f, .19f, .036f), canopy);
                 Box("Bench leg", new Vector3(x - .32f, .25f, 1.73f), new Vector3(.056f, .28f, .19f), iron);
                 Box("Bench leg", new Vector3(x + .32f, .25f, 1.73f), new Vector3(.056f, .28f, .19f), iron);
-            }
-            for (int i = 0; i < 5; i++)
-            {
-                float x = -8.2f + i * 4.05f;
-                Box("Street light mast", new Vector3(x, .74f, -5.35f), new Vector3(.07f, 1.5f, .07f), iron);
-                Box("Street light cap", new Vector3(x, 1.49f, -5.35f), new Vector3(.27f, .13f, .23f), amber);
-            }
-
-            Vector2[] trees =
-            {
-                new Vector2(-15.8f, 8.4f), new Vector2(-15.5f, -7.5f), new Vector2(-8.7f, 11.6f),
-                new Vector2(-3.9f, 13), new Vector2(1, 10.7f), new Vector2(8.9f, 11.1f),
-                new Vector2(15.5f, 6.6f), new Vector2(16.1f, -5.2f), new Vector2(10.2f, -11.6f),
-                new Vector2(5.9f, -11.4f), new Vector2(-5.8f, -11.8f), new Vector2(-10.3f, -10.8f),
-                new Vector2(8.4f, 4.2f), new Vector2(-8.5f, 5.0f), new Vector2(1.9f, 4.8f)
-            };
-            for (int i = 0; i < trees.Length; i++)
-            {
-                Vector3 scale = i % 2 == 0 ? new Vector3(1.6f, 2.65f, 1.6f) : new Vector3(1.15f, 1.7f, 1.15f);
-                Model(i % 2 == 0 ? "town/tree-large" : "town/tree-small", root,
-                    new Vector3(trees[i].x, -.02f, trees[i].y), new Vector3(0, i * 73 % 360, 0), scale);
             }
         }
 
@@ -348,9 +322,11 @@ namespace GarageGauntlet
             Material steel = Paint(.62f, .64f, .64f);
             steel.SetFloat("_Metallic", .53f);
             steel.SetFloat("_Glossiness", .54f);
-            SurfaceBox("Gravel rail bed", new Vector3(0, .021f, 0), new Vector3(36.4f, .05f, 1.55f),
+            float width = 2 * RaceCourse.BoardHalfWidth;
+            SurfaceBox("Gravel rail bed", new Vector3(0, .021f, 0), new Vector3(width, .05f, 1.55f),
                 new Vector2(1.42f, 1.20f), ballast);
-            for (int i = -34; i <= 34; i++)
+            int ties = Mathf.FloorToInt((RaceCourse.BoardHalfWidth - .2f) / .52f);
+            for (int i = -ties; i <= ties; i++)
             {
                 float x = i * .52f;
                 Box("Rail tie", new Vector3(x, .061f, 0), new Vector3(.17f, .053f, 1.30f), sleepers);
@@ -362,8 +338,8 @@ namespace GarageGauntlet
             }
             foreach (float rail in new[] { -.43f, .43f })
             {
-                Box("Oxidized rail web", new Vector3(0, .107f, rail), new Vector3(36.5f, .064f, .043f), rust);
-                Box("Polished rail head", new Vector3(0, .14f, rail), new Vector3(36.5f, .018f, .062f), steel);
+                Box("Oxidized rail web", new Vector3(0, .107f, rail), new Vector3(width, .064f, .043f), rust);
+                Box("Polished rail head", new Vector3(0, .14f, rail), new Vector3(width, .018f, .062f), steel);
             }
             Material warning = Paint(.98f, .65f, .19f);
             Material stripe = Paint(.90f, .87f, .74f);
@@ -371,8 +347,7 @@ namespace GarageGauntlet
             signalRed = Glow(1, .16f, .08f);
             foreach (Vector3 crossing in course.Crossings)
             {
-                if (crossing.x > 0)
-                    DetailCrossing(course, crossing);
+                DetailCrossing(course, crossing);
                 float x = crossing.x - 2.18f;
                 float z = crossing.x > 0 ? -1.25f : 1.25f;
                 Box("Crossing signal post", new Vector3(x, .65f, z), new Vector3(.13f, 1.25f, .13f), metal);

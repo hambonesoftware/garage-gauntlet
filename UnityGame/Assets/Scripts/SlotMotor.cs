@@ -102,7 +102,7 @@ namespace GarageGauntlet
 
         private bool TouchesTrain(float distance, float angle, float trainX)
         {
-            if (trainX < -20 || trainX > 21)
+            if (trainX < -RaceCourse.BoardHalfWidth - 2.65f || trainX > RaceCourse.BoardHalfWidth + 4.65f)
                 return false;
             Pose(distance, angle, out Vector3 guide, out Vector3 center, out Vector3 heading);
             return RailwayTown.TrainHits(trainX, guide) || RailwayTown.TrainHits(trainX, center)
