@@ -22,6 +22,9 @@
 <path d="M198.0 284.4 L261.9 277.3 L332.9 277.3 L396.8 271.6 L460.7 275.2 L531.7 270.2 L581.4 252.4 L616.9 234.7" fill="none" stroke="#aa8b66" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
 <path d="M393.3 589.7 L393.3 496.7 M359.2 454.8 L359.2 398.0" fill="none" stroke="#aaa188" stroke-width="9"/>
 <ellipse cx="445.78999999999996" cy="450.82399999999996" rx="29" ry="17.7" fill="#74a7a5" stroke="#527d7e" stroke-width="2"/>
+<rect x="277.8" y="609.0" width="30.0" height="14.9" rx="2" fill="#7f8574" stroke="#51473b" stroke-width="1"><title>Courthouse</title></rect>
+<rect x="475.3" y="607.7" width="35.3" height="17.9" rx="2" fill="#9cac7b" stroke="#6b795e" stroke-width="1"><title>Maple Square</title></rect>
+<circle cx="492.9" cy="616.7" r="3.4" fill="#74a7a5"><title>Maple Square fountain</title></circle>
 <rect x="448.3" y="603.5" width="24.849999999999998" height="17.04" rx="2" fill="#9d6e56" stroke="#51473b" stroke-width="1"/>
 <rect x="520.0" y="605.1" width="23.429999999999996" height="15.264999999999999" rx="2" fill="#9d6e56" stroke="#51473b" stroke-width="1"/>
 <rect x="476.9" y="384.3" width="15.975" height="13.135" rx="2" fill="#9d6e56" stroke="#51473b" stroke-width="1"/>
