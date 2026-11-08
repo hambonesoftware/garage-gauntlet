@@ -223,6 +223,7 @@ namespace GarageGauntlet
             DrawMillPond();
             DrawDepotYard();
             DrawCottageHill(course);
+            DrawMapleJunctionDetails();
             DrawBrickStation();
             Material platform = Surface("timber", new Color(.83f, .77f, .65f), .13f);
             Material canopy = Paint(.26f, .35f, .43f);
