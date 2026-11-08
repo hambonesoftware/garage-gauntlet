@@ -25,12 +25,12 @@ namespace GarageGauntlet
             // A lived-in commercial street: bins, bicycle racks and curb planters.
             for (int i = 0; i < 4; i++)
             {
-                float x = -.3f + i * 3.65f;
-                Box("Main Street planter", new Vector3(x, .17f, -19.18f),
-                    new Vector3(.66f, .30f, .44f), planter);
+                float x = .625f + i * 3.65f;
+                Box("Main Street planter", new Vector3(x, .17f, -18.68f),
+                    new Vector3(.38f, .30f, .28f), planter);
                 for (int p = 0; p < 3; p++)
-                    Box("Main Street planted hedge", new Vector3(x + (p - 1) * .18f, .37f, -19.18f),
-                        new Vector3(.22f, .22f, .31f), leaves);
+                    Box("Main Street planted hedge", new Vector3(x + (p - 1) * .10f, .37f, -18.68f),
+                        new Vector3(.13f, .22f, .21f), leaves);
             }
             for (int i = 0; i < 3; i++)
             {
@@ -40,11 +40,11 @@ namespace GarageGauntlet
                 Box("Bin lid", new Vector3(x, .55f, -10.88f),
                     new Vector3(.38f, .055f, .39f), asphalt);
             }
-            Box("Downtown fire hydrant stem", new Vector3(-2.8f, .22f, -19.05f),
+            Box("Downtown fire hydrant stem", new Vector3(-3.2f, .22f, -18.65f),
                 new Vector3(.17f, .38f, .17f), red);
-            Box("Downtown fire hydrant cap", new Vector3(-2.8f, .43f, -19.05f),
+            Box("Downtown fire hydrant cap", new Vector3(-3.2f, .43f, -18.65f),
                 new Vector3(.25f, .10f, .25f), red);
-            Box("Downtown fire hydrant arms", new Vector3(-2.8f, .29f, -19.05f),
+            Box("Downtown fire hydrant arms", new Vector3(-3.2f, .29f, -18.65f),
                 new Vector3(.35f, .10f, .13f), red);
             // A removable miniature-town wayfinding board at the square.
             Box("Town directory board", new Vector3(4.18f, .85f, 5.55f),
@@ -91,9 +91,9 @@ namespace GarageGauntlet
                 Box("Pond picnic support", new Vector3(18.6f + side * .38f, .20f, 3.45f),
                     new Vector3(.09f, .38f, .09f), metal);
             }
-            Box("Pond park notice", new Vector3(9.0f, .86f, 8.9f),
+            Box("Pond park notice", new Vector3(8.7f, .86f, 9.25f),
                 new Vector3(.84f, .57f, .08f), cream);
-            Box("Pond notice post", new Vector3(9.0f, .43f, 8.9f),
+            Box("Pond notice post", new Vector3(8.7f, .43f, 9.25f),
                 new Vector3(.09f, .83f, .09f), timber);
         }
 

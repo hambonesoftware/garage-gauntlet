@@ -23,8 +23,8 @@ namespace GarageGauntlet
         public RaceCourse() : this(new[]
         {
             Point(0, -22), Point(14, -22), Point(25, -23), Point(33, -19),
-            Point(36, -12), Point(35, 2), Point(37, 12), Point(32, 21),
-            Point(23, 25), Point(11, 24), Point(2, 25), Point(-12, 24),
+            Point(36, -12), Point(35, 2), Point(36, 9), Point(31, 13),
+            Point(29, 17), Point(31, 22), Point(23, 25), Point(11, 24), Point(2, 25), Point(-12, 24),
             Point(-26, 25), Point(-34, 20), Point(-37, 12), Point(-36, 2),
             Point(-37, -9), Point(-32, -20), Point(-22, -25), Point(-13, -23), Point(-7, -22)
         })
@@ -83,18 +83,20 @@ namespace GarageGauntlet
             float t = Mathf.InverseLerp(distances[index], distances[index + 1], distance);
             direction = Vector3.Lerp(Tangent(index), Tangent(index + 1), t).normalized;
             Vector3 point = Vector3.Lerp(At(index), At(index + 1), t);
-            point.y = ElevationAt(distance);
-            direction.y = (ElevationAt(distance + .15f) - ElevationAt(distance - .15f)) / .30f;
+            point.y = ElevationAt(distance, point);
+            Vector3 slopeProbe = direction * .15f;
+            direction.y = (ElevationAt(distance + .15f, point + slopeProbe) - ElevationAt(distance - .15f, point - slopeProbe)) / .30f;
             direction.Normalize();
             return point;
         }
 
-        public float ElevationAt(float distance)
+        public float ElevationAt(float distance, Vector3 position)
         {
             if (Railway == null)
                 return 0;
             float rampDistance = Mathf.Max(Railway.BridgeStart - distance, distance - Railway.BridgeEnd);
-            return Mathf.SmoothStep(BridgeHeight, 0, Mathf.Clamp01(rampDistance / RampLength));
+            return Mathf.Max(MapleJunctionPlan.GroundHeight(position.x, position.z),
+                Mathf.SmoothStep(BridgeHeight, 0, Mathf.Clamp01(rampDistance / RampLength)));
         }
 
         public float Locate(Vector3 position, out float lateral)

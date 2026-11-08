@@ -4,8 +4,8 @@ namespace GarageGauntlet
 {
     public sealed partial class RcRace : MonoBehaviour
     {
-        private const string TrialBestKey = "garage-gauntlet-slot-trial-flyover";
-        private const string PrixBestKey = "garage-gauntlet-slot-prix-flyover";
+        private const string TrialBestKey = "garage-gauntlet-slot-trial-maple-junction";
+        private const string PrixBestKey = "garage-gauntlet-slot-prix-maple-junction";
         private const float MaximumStep = .025f;
         private enum RaceState { Ready, Countdown, Racing, Paused, Finished }
 
@@ -223,10 +223,21 @@ namespace GarageGauntlet
             bool overview = state == RaceState.Ready;
             Vector3 target = car.position + car.forward * motor.Speed * .125f;
             float size = Mathf.Max(7.45f, 5.8f / aspect);
-            Vector3 offset = overview ? new Vector3(4, 21, -10) * 5 : new Vector3(5, 15, -12);
+            Vector3 overhead = new Vector3(4, 21, -10) * 5;
+            Vector3 offset = overview ? overhead : new Vector3(5, 9, -12);
             Quaternion rotation = Quaternion.LookRotation(-offset);
             if (overview)
                 FrameBoard(rotation, aspect, out target, out size);
+            if (state == RaceState.Countdown || (state == RaceState.Paused && pausedState == RaceState.Countdown))
+            {
+                Quaternion overheadRotation = Quaternion.LookRotation(-overhead);
+                FrameBoard(overheadRotation, aspect, out Vector3 boardTarget, out float boardSize);
+                float descent = Mathf.SmoothStep(0, 1, Mathf.Clamp01((3 - countdown) / 2.45f));
+                raceCamera.transform.SetPositionAndRotation(Vector3.Lerp(boardTarget + overhead, target + offset, descent),
+                    Quaternion.Slerp(overheadRotation, rotation, descent));
+                raceCamera.orthographicSize = Mathf.Lerp(boardSize, size, descent);
+                return;
+            }
             float blend = snap ? 1 : 1 - Mathf.Exp(-6 * Time.deltaTime);
             raceCamera.transform.position = Vector3.Lerp(raceCamera.transform.position, target + offset, blend);
             raceCamera.transform.rotation = Quaternion.Slerp(raceCamera.transform.rotation, rotation, blend);

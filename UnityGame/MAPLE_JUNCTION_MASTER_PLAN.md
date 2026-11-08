@@ -1,5 +1,7 @@
 # Maple Junction — Town Master Plan
 
+For the current layout, playtest scope, and measured overhead drawing, see the [Maple Junction town master plan](MapleJunctionPlan.md). The notes below record the earlier scenery proposal.
+
 ## Creative direction
 Garage Gauntlet: Railway Rush takes place on an elaborate, physically plausible model railway table. Maple Junction is a fictional Midwestern town with a compact historic core, older residential streets, railway freight operations, and a small park. The player is racing a guided die-cast slot car through a miniature built by an enthusiast, not driving a full-size vehicle on an open-world road.
 

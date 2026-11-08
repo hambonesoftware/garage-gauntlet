@@ -51,6 +51,7 @@ namespace GarageGauntlet
 
         private void DrawFlockedTree(Vector3 origin, int index)
         {
+            origin.y += MapleJunctionPlan.GroundHeight(origin.x, origin.z);
             if (foliageClump == null)
             {
                 foliageClump = CreateFoliageClump();

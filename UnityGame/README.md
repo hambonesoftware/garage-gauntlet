@@ -1,5 +1,7 @@
 # Garage Gauntlet · Railway Rush
 
+The [Maple Junction master plan](MapleJunctionPlan.md) shows how the five districts, local streets, terrain, railway, and slot route fit together. The playable layout uses study volumes for new building lots.
+
 Race a die-cast slot car around Switchyard on a four-lane tabletop circuit. Main Street, Mill Pond, the town square, and residential blocks sit inside the course. The railway meets the slot track at two grade crossings and runs below a ramped flyover at its southern turnaround. The three-lap Grand Prix pits you against Ember, Switch, and Volt. Time Trial gives you the same circuit on your own with a separate personal best. The game runs locally in Unity or in the browser.
 
 ## Play in Unity

@@ -106,10 +106,8 @@ namespace GarageGauntlet
 
             if (state == RaceState.Ready)
             {
-                DrawPreviewLabel("HALL", new Vector3(.7f, 4.4f, 14.1f), 58);
-                DrawPreviewLabel("POND", new Vector3(13, .1f, 6), 62);
-                DrawPreviewLabel("SHOPS", new Vector3(3, 2.8f, -17.7f), 70);
-                DrawPreviewLabel("BRIDGE", course.Sample((course.Railway.BridgeStart + course.Railway.BridgeEnd) / 2, out _), 85);
+                foreach (MapleJunctionPlan.District district in MapleJunctionPlan.Districts)
+                    DrawPreviewLabel(district.Name, district.Marker, district.Name.Length * 10 + 12);
                 DrawGridMenu();
             }
             else
@@ -159,7 +157,7 @@ namespace GarageGauntlet
             Caption(x + 19, y + 19, width - 38, "GARAGE GAUNTLET   /   01");
             GUI.Label(new Rect(x + 18, y + 41, width - 36, 62), "Railway Rush", display);
             GUI.Label(new Rect(x + 19, y + 106, width - 38, 42),
-                "Two live train crossings and one flyover. Lift before tight bends.", body);
+                "Maple Junction, Michigan · Town layout preview\nTwo train crossings and one flyover.", body);
 
             if (GUI.Button(new Rect(x + 18, y + 163, width - 36, 45), "START GRAND PRIX", primary))
                 StartRace(true);

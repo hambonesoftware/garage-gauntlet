@@ -117,6 +117,7 @@ namespace GarageGauntlet
             SurfaceBox("Wooden display board", center + Vector3.down * .56f, new Vector3(width, .9f, depth), new Vector2(4.1f, 1.4f), wood);
             Box("Tabletop edge band", center + Vector3.down * .25f, new Vector3(width + .1f, .12f, depth + .1f), trim);
             SurfaceBox("Flocked tabletop", center + Vector3.down * .105f, new Vector3(width - .3f, .17f, depth - .3f), new Vector2(3.4f, 3.4f), grass);
+            DrawMapleTerrain(course, grass);
             DrawWorkbench(width, depth, wood, trim);
             Ribbon(course, RaceCourse.HalfWidth + .16f, .024f, shoulder, "Slot track bevel");
             Ribbon(course, RaceCourse.HalfWidth, .035f, plastic, "Molded slot track");
@@ -218,7 +219,8 @@ namespace GarageGauntlet
         private void DrawTown(RaceCourse course)
         {
             DrawMainStreet();
-            DrawTownBlocks();
+            DrawTownBlocks(course);
+            DrawMapleDistricts(course);
             DrawTownSquare();
             DrawMillPond();
             DrawDepotYard();
@@ -428,7 +430,8 @@ namespace GarageGauntlet
             var triangles = new List<int>(course.Count * 6);
             for (int i = 0; i < course.Count; i++)
             {
-                Vector3 center = course.At(i) + Vector3.up * (y + course.ElevationAt(course.DistanceAt(i)));
+                Vector3 at = course.At(i);
+                Vector3 center = at + Vector3.up * (y + course.ElevationAt(course.DistanceAt(i), at));
                 Vector3 tangent = Vector3.Cross(Vector3.up, course.Tangent(i));
                 center += tangent * offset;
                 Vector3 side = tangent * halfWidth;

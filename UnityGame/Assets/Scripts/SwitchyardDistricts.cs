@@ -76,11 +76,11 @@ namespace GarageGauntlet
                     StreetLamp(.63f + i * 3.65f, z + face * 1.62f, roof, lit);
             }
 
-            TownSign("SWITCHYARD  •  MAIN ST", new Vector3(-4.12f, 1.06f, -18.15f), 2.32f, .32f, -1, cream);
+            TownSign("MAPLE JUNCTION", new Vector3(-4.12f, 1.06f, -18.15f), 2.32f, .32f, -1, cream);
             Box("Welcome sign post", new Vector3(-4.12f, .57f, -18.11f), new Vector3(.09f, 1.06f, .09f), roof);
         }
 
-        private void DrawTownBlocks()
+        private void DrawTownBlocks(RaceCourse course)
         {
             Material pavement = Surface("asphalt", new Color(.68f, .66f, .60f), .12f);
             Material sidewalk = Paint(.56f, .52f, .43f);
@@ -129,7 +129,12 @@ namespace GarageGauntlet
                 RaceCourse.Point(40, 26), RaceCourse.Point(36, 33), RaceCourse.Point(29, 36), RaceCourse.Point(19, 34),
                 RaceCourse.Point(7, 34), RaceCourse.Point(-4, 36), RaceCourse.Point(-15, 34), RaceCourse.Point(-18, 31)
             })
-                DrawFlockedTree(position, tree++);
+            {
+                course.Locate(position, out float roadGap);
+                course.Railway.Path.Locate(position, out float railGap);
+                if (roadGap > RaceCourse.HalfWidth + 1.05f && railGap > 1.55f)
+                    DrawFlockedTree(position, tree++);
+            }
         }
 
         private void DrawShopRoof(float x, float z, float eave, int face, bool pitched, bool stepped,
