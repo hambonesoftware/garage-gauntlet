@@ -107,6 +107,8 @@ namespace GarageGauntlet
                     Box("Residential sidewalk", new Vector3(center, .026f, lane + side * 1.1f), new Vector3(13.6f, .06f, .49f), sidewalk);
                     for (int lot = 0; lot < 3; lot++)
                     {
+                        if (block == 0 && lot == 1)
+                            continue;
                         float x = center + (lot - 1) * 4.18f;
                         float z = lane + side * spacing;
                         Craftsman(x, z, side == 1 ? 0 : 180, walls[(block + lot + (side + 1) / 2) % walls.Length]);
@@ -268,7 +270,7 @@ namespace GarageGauntlet
             Material iron = Paint(.25f, .32f, .35f);
             Material rail = Paint(.61f, .60f, .55f);
             Material cream = Paint(.84f, .74f, .55f);
-            const float x = -13.5f, z = -2.83f;
+            const float x = -7.7f, z = -2.83f;
             SurfaceBox("Depot yard gravel", new Vector3(x, .01f, z - 1.10f), new Vector3(10.45f, .06f, 4.37f), new Vector2(1.1f, 1.1f), gravel);
             for (int i = 0; i < 20; i++)
                 Box("Siding sleeper", new Vector3(x + (i - 9.5f) * .51f, .059f, z), new Vector3(.16f, .045f, 1.20f), timber);
@@ -329,7 +331,7 @@ namespace GarageGauntlet
             {
                 float x = -15.85f + i * 3.23f;
                 Craftsman(x, 10.25f, i == 1 ? 8 : -5, houseColors[i]);
-                House(i == 1 ? "building-type-g" : "building-type-a", -4.5f + 4.1f * i, -6.3f, 180,
+                House(i == 1 ? "building-type-g" : "building-type-a", -4.5f + 4.1f * i, -7.3f, 180,
                     i == 1 ? "variation-c" : "variation-b");
                 Box("Kitchen garden soil", new Vector3(x - .86f, .013f, 9.00f), new Vector3(.95f, .064f, .60f), soil);
                 for (int plant = 0; plant < 4; plant++)

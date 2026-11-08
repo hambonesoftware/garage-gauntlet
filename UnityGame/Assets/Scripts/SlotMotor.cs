@@ -36,7 +36,7 @@ namespace GarageGauntlet
         {
             float bend = course.Curvature(distance);
             float laneRadius = Mathf.Clamp(1 - bend * lane, .45f, 1.65f);
-            return Mathf.Clamp(Mathf.Sqrt(27f * laneRadius / Mathf.Max(.01f, Mathf.Abs(bend))), 5.1f, TopSpeed);
+            return Mathf.Clamp(Mathf.Sqrt(16.5f * laneRadius / Mathf.Max(.01f, Mathf.Abs(bend))), 5.1f, TopSpeed);
         }
 
         public float BrakeTarget()

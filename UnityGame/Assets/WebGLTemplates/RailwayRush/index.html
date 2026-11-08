@@ -49,7 +49,8 @@
           companyName: "Garage Gauntlet",
           productName: "Railway Rush",
           productVersion: "{{{ PRODUCT_VERSION }}}",
-          devicePixelRatio: Math.min(window.devicePixelRatio || 1, 1.5)
+          devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2,
+            Math.max(1, Math.sqrt(1800000 / (window.innerWidth * window.innerHeight))))
         }, value => { progress.value = value; });
         loading.hidden = true;
         canvas.focus();

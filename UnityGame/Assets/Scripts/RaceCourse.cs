@@ -11,7 +11,9 @@ namespace GarageGauntlet
         public const float HalfWidth = 2.15f;
         public const int LaneCount = 4;
         public const float BoardHalfWidth = 49;
-        public const float BoardHalfDepth = 39;
+        public const float BoardHalfDepth = 43;
+        public const float BridgeHeight = 2.68f;
+        public const float RampLength = 8.5f;
         public static readonly Vector3 BoardCenter = new Vector3(7, 0, 10);
         public static float SlotOffset(int lane) => (lane - 1.5f) * 1.01f;
         public float Length => distances[points.Count];
@@ -20,8 +22,8 @@ namespace GarageGauntlet
 
         public RaceCourse() : this(new[]
         {
-            Point(0, -22), Point(14, -22), Point(25, -23), Point(34, -17),
-            Point(36, -8), Point(35, 2), Point(37, 12), Point(32, 21),
+            Point(0, -22), Point(14, -22), Point(25, -23), Point(33, -19),
+            Point(36, -12), Point(35, 2), Point(37, 12), Point(32, 21),
             Point(23, 25), Point(11, 24), Point(2, 25), Point(-12, 24),
             Point(-26, 25), Point(-34, 20), Point(-37, 12), Point(-36, 2),
             Point(-37, -9), Point(-32, -20), Point(-22, -25), Point(-13, -23), Point(-7, -22)
@@ -69,6 +71,7 @@ namespace GarageGauntlet
             const float span = 1.35f;
             Sample(distance - span, out Vector3 before);
             Sample(distance + span, out Vector3 after);
+            before.y = after.y = 0;
             return Vector3.SignedAngle(before, after, Vector3.up) * Mathf.Deg2Rad / (2 * span);
         }
 
@@ -79,7 +82,19 @@ namespace GarageGauntlet
             int index = Mathf.Min(Count - 1, next >= 0 ? next : ~next - 1);
             float t = Mathf.InverseLerp(distances[index], distances[index + 1], distance);
             direction = Vector3.Lerp(Tangent(index), Tangent(index + 1), t).normalized;
-            return Vector3.Lerp(At(index), At(index + 1), t);
+            Vector3 point = Vector3.Lerp(At(index), At(index + 1), t);
+            point.y = ElevationAt(distance);
+            direction.y = (ElevationAt(distance + .15f) - ElevationAt(distance - .15f)) / .30f;
+            direction.Normalize();
+            return point;
+        }
+
+        public float ElevationAt(float distance)
+        {
+            if (Railway == null)
+                return 0;
+            float rampDistance = Mathf.Max(Railway.BridgeStart - distance, distance - Railway.BridgeEnd);
+            return Mathf.SmoothStep(BridgeHeight, 0, Mathf.Clamp01(rampDistance / RampLength));
         }
 
         public float Locate(Vector3 position, out float lateral)

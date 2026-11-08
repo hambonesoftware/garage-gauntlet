@@ -4,8 +4,8 @@ namespace GarageGauntlet
 {
     public sealed partial class RcRace : MonoBehaviour
     {
-        private const string TrialBestKey = "garage-gauntlet-slot-trial-twin-loops";
-        private const string PrixBestKey = "garage-gauntlet-slot-prix-twin-loops";
+        private const string TrialBestKey = "garage-gauntlet-slot-trial-flyover";
+        private const string PrixBestKey = "garage-gauntlet-slot-prix-flyover";
         private const float MaximumStep = .025f;
         private enum RaceState { Ready, Countdown, Racing, Paused, Finished }
 
@@ -143,7 +143,7 @@ namespace GarageGauntlet
         private void Step(float throttle, float dt)
         {
             elapsed += dt;
-            course.Railway.SetTrainDistance(elapsed * 6.5f);
+            course.Railway.SetTrainDistance(elapsed * 5.8f);
             town.UpdateTrain(course.Railway, elapsed, dt);
             if (grandPrix)
                 foreach (RivalDriver rival in rivals)
@@ -249,7 +249,7 @@ namespace GarageGauntlet
         }
 
         private static float ProjectedExtent(Vector3 axis) =>
-            (RaceCourse.BoardHalfWidth + 12) * Mathf.Abs(axis.x) + 3.2f * Mathf.Abs(axis.y)
-            + (RaceCourse.BoardHalfDepth + 10) * Mathf.Abs(axis.z);
+            (RaceCourse.BoardHalfWidth + 3) * Mathf.Abs(axis.x) + 3.2f * Mathf.Abs(axis.y)
+            + (RaceCourse.BoardHalfDepth + 3) * Mathf.Abs(axis.z);
     }
 }

@@ -105,7 +105,13 @@ namespace GarageGauntlet
             GUI.matrix = Matrix4x4.Scale(new Vector3(Scale, Scale, 1));
 
             if (state == RaceState.Ready)
+            {
+                DrawPreviewLabel("HALL", new Vector3(.7f, 4.4f, 14.1f), 58);
+                DrawPreviewLabel("POND", new Vector3(13, .1f, 6), 62);
+                DrawPreviewLabel("SHOPS", new Vector3(3, 2.8f, -17.7f), 70);
+                DrawPreviewLabel("BRIDGE", course.Sample((course.Railway.BridgeStart + course.Railway.BridgeEnd) / 2, out _), 85);
                 DrawGridMenu();
+            }
             else
             {
                 DrawTelemetry();
@@ -125,6 +131,16 @@ namespace GarageGauntlet
 
         private bool GridMenuOnSide => Screen.width >= Screen.height * 1.45f;
 
+        private void DrawPreviewLabel(string text, Vector3 position, float width)
+        {
+            Vector3 screen = raceCamera.WorldToScreenPoint(position);
+            Vector2 point = ToHud(screen);
+            Rect tag = new Rect(point.x - width / 2, point.y - 22, width, 18);
+            Fill(tag, Ink);
+            Fill(new Rect(point.x - .65f, tag.yMax, 1.3f, 4), Mint);
+            Caption(tag.x + 5, tag.y - 1, tag.width - 10, text);
+        }
+
         private Rect GridMenuCard
         {
             get
@@ -143,7 +159,7 @@ namespace GarageGauntlet
             Caption(x + 19, y + 19, width - 38, "GARAGE GAUNTLET   /   01");
             GUI.Label(new Rect(x + 18, y + 41, width - 36, 62), "Railway Rush", display);
             GUI.Label(new Rect(x + 19, y + 106, width - 38, 42),
-                "Race around Switchyard. Watch for the model train at both crossings.", body);
+                "Two live train crossings and one flyover. Lift before tight bends.", body);
 
             if (GUI.Button(new Rect(x + 18, y + 163, width - 36, 45), "START GRAND PRIX", primary))
                 StartRace(true);

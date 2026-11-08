@@ -120,6 +120,7 @@ namespace GarageGauntlet
             DrawWorkbench(width, depth, wood, trim);
             Ribbon(course, RaceCourse.HalfWidth + .16f, .024f, shoulder, "Slot track bevel");
             Ribbon(course, RaceCourse.HalfWidth, .035f, plastic, "Molded slot track");
+            DrawFlyover(course);
             for (int lane = 0; lane < RaceCourse.LaneCount; lane++)
             {
                 float offset = RaceCourse.SlotOffset(lane);
@@ -132,8 +133,7 @@ namespace GarageGauntlet
             Material curbRed = Paint(.74f, .29f, .20f);
             for (int i = 0; i < course.Count; i += 2)
             {
-                Vector3 at = course.At(i);
-                Vector3 tangent = course.Tangent(i);
+                Vector3 at = course.Sample(course.DistanceAt(i), out Vector3 tangent);
                 if (NearCrossing(course, course.DistanceAt(i), 2.4f) ||
                     Mathf.Abs(Vector3.SignedAngle(course.Tangent(i - 2), course.Tangent(i + 2), Vector3.up)) < 10)
                     continue;
@@ -171,6 +171,47 @@ namespace GarageGauntlet
                 Vector3 size = new Vector3(.29f, .43f, .29f);
                 Model("toy/item-cone", root, at + side, Vector3.zero, size);
                 Model("toy/item-cone", root, at - side, Vector3.zero, size);
+            }
+        }
+
+        private void DrawFlyover(RaceCourse course)
+        {
+            Material girder = Paint(.24f, .29f, .33f);
+            Material footing = Paint(.51f, .49f, .43f);
+            Material rail = Paint(.77f, .65f, .40f);
+            float start = course.Railway.BridgeStart;
+            float end = course.Railway.BridgeEnd;
+            float approach = start - RaceCourse.RampLength;
+            float exit = end + RaceCourse.RampLength;
+            int segments = Mathf.CeilToInt(exit - approach);
+            float panel = (exit - approach) / segments;
+            for (int i = 0; i < segments; i++)
+            {
+                Vector3 center = course.Sample(approach + (i + .5f) * panel, out Vector3 forward);
+                Quaternion turn = Quaternion.LookRotation(forward);
+                Vector3 side = turn * Vector3.right;
+                Vector3 up = turn * Vector3.up;
+                Box("Elevated deck slab", center - up * .095f, new Vector3(4.43f, .21f, panel + .12f), girder, turn);
+                for (int sign = -1; sign <= 1; sign += 2)
+                {
+                    Vector3 edge = center + side * (sign * 2.24f);
+                    Box("Bridge edge beam", edge + up * .105f, new Vector3(.16f, .33f, panel + .12f), girder, turn);
+                    Box("Flyover safety rail", edge + up * .26f, new Vector3(.08f, .085f, panel + .12f), rail, turn);
+                }
+            }
+
+            foreach (float distance in new[] { start - 4.3f, start - .75f, (start + end) / 2, end + .75f, end + 4.3f })
+            {
+                Vector3 deck = course.Sample(distance, out Vector3 forward);
+                forward.y = 0;
+                Quaternion turn = Quaternion.LookRotation(forward);
+                Vector3 side = turn * Vector3.right;
+                for (int sign = -1; sign <= 1; sign += 2)
+                {
+                    Vector3 basePoint = deck + side * (sign * 1.83f);
+                    Box("Bridge footing", new Vector3(basePoint.x, .08f, basePoint.z), new Vector3(.70f, .18f, .70f), footing, turn);
+                    Box("Bridge support", new Vector3(basePoint.x, deck.y / 2, basePoint.z), new Vector3(.42f, deck.y, .47f), footing, turn);
+                }
             }
         }
 
@@ -386,7 +427,7 @@ namespace GarageGauntlet
             var triangles = new List<int>(course.Count * 6);
             for (int i = 0; i < course.Count; i++)
             {
-                Vector3 center = course.At(i) + Vector3.up * y;
+                Vector3 center = course.At(i) + Vector3.up * (y + course.ElevationAt(course.DistanceAt(i)));
                 Vector3 tangent = Vector3.Cross(Vector3.up, course.Tangent(i));
                 center += tangent * offset;
                 Vector3 side = tangent * halfWidth;

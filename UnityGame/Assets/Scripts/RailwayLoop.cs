@@ -22,13 +22,19 @@ namespace GarageGauntlet
 
         public RaceCourse Path { get; } = new RaceCourse(new[]
         {
-            RaceCourse.Point(-14, 0), RaceCourse.Point(5, 0), RaceCourse.Point(26, 0), RaceCourse.Point(44, 0),
-            RaceCourse.Point(51, 6), RaceCourse.Point(51, 17), RaceCourse.Point(51, 33), RaceCourse.Point(44, 42),
-            RaceCourse.Point(25, 42), RaceCourse.Point(5, 42), RaceCourse.Point(-15, 42), RaceCourse.Point(-23, 36),
-            RaceCourse.Point(-24, 25), RaceCourse.Point(-24, 14), RaceCourse.Point(-24, 6), RaceCourse.Point(-20, 1)
+            RaceCourse.Point(-11, 0), RaceCourse.Point(5, 0), RaceCourse.Point(26, 0), RaceCourse.Point(43, 0),
+            RaceCourse.Point(50, 5), RaceCourse.Point(52, 14), RaceCourse.Point(52, 31), RaceCourse.Point(47, 39),
+            RaceCourse.Point(37, 43), RaceCourse.Point(16, 43), RaceCourse.Point(-6, 43), RaceCourse.Point(-19, 41),
+            RaceCourse.Point(-25, 35), RaceCourse.Point(-26, 24), RaceCourse.Point(-26, 7), RaceCourse.Point(-26, -11),
+            RaceCourse.Point(-26, -23), RaceCourse.Point(-24, -28.7f), RaceCourse.Point(-20.5f, -30.5f),
+            RaceCourse.Point(-17, -28.7f), RaceCourse.Point(-15, -24), RaceCourse.Point(-15, -16),
+            RaceCourse.Point(-15, -6), RaceCourse.Point(-13, -1)
         });
 
         public IReadOnlyList<Crossing> Crossings { get; }
+        public IReadOnlyList<Crossing> OverpassTracks { get; }
+        public float BridgeStart { get; }
+        public float BridgeEnd { get; }
         public Vector3 EnginePosition { get; private set; }
         public Vector3 EngineDirection { get; private set; }
         public Vector3 WagonPosition { get; private set; }
@@ -38,6 +44,7 @@ namespace GarageGauntlet
         public RailwayLoop(RaceCourse road)
         {
             var crossings = new List<Crossing>();
+            var overpass = new List<Crossing>();
             for (int i = 0; i < road.Count; i++)
             for (int j = 0; j < Path.Count; j++)
             {
@@ -49,11 +56,23 @@ namespace GarageGauntlet
                 float t = Cross(b - a, rail) / denominator;
                 float u = Cross(b - a, slot) / denominator;
                 if (t >= 0 && t < 1 && u >= 0 && u < 1)
-                    crossings.Add(new Crossing(a + slot * t, slot, rail,
+                {
+                    Vector3 point = a + slot * t;
+                    var crossing = new Crossing(point, slot, rail,
                         Mathf.Lerp(road.DistanceAt(i), road.DistanceAt(i + 1), t),
-                        Mathf.Lerp(Path.DistanceAt(j), Path.DistanceAt(j + 1), u)));
+                        Mathf.Lerp(Path.DistanceAt(j), Path.DistanceAt(j + 1), u));
+                    if (point.z < -20)
+                        overpass.Add(crossing);
+                    else
+                        crossings.Add(crossing);
+                }
             }
+            if (crossings.Count != 2 || overpass.Count != 2)
+                throw new System.InvalidOperationException("Switchyard requires two grade crossings and two rails under one bridge.");
             Crossings = crossings;
+            OverpassTracks = overpass;
+            BridgeStart = overpass[0].RoadDistance - 1.8f;
+            BridgeEnd = overpass[overpass.Count - 1].RoadDistance + 1.8f;
             SetTrainDistance(0);
         }
 
@@ -81,7 +100,8 @@ namespace GarageGauntlet
         private static bool HitsCar(Vector3 position, Vector3 center, Vector3 direction, float halfLength, float halfWidth)
         {
             Vector3 offset = position - center;
-            return Mathf.Abs(Vector3.Dot(offset, direction)) < halfLength && Mathf.Abs(Cross(offset, direction)) < halfWidth;
+            return Mathf.Abs(offset.y) < 1.5f && Mathf.Abs(Vector3.Dot(offset, direction)) < halfLength
+                && Mathf.Abs(Cross(offset, direction)) < halfWidth;
         }
     }
 }
