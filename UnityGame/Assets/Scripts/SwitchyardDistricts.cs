@@ -13,13 +13,18 @@ namespace GarageGauntlet
             Material pavement = Paint(.50f, .47f, .40f);
             Material roof = Paint(.24f, .26f, .27f);
             Material glass = Paint(.18f, .32f, .36f);
+            glass.SetFloat("_Glossiness", .82f);
             Material lit = Glow(.82f, .58f, .32f);
             Material green = Paint(.22f, .43f, .35f);
             Material red = Paint(.67f, .27f, .21f);
             Material blue = Paint(.26f, .41f, .57f);
             Material plaster = Paint(.77f, .66f, .47f);
+            Material tile = Surface("roof", new Color(.70f, .65f, .61f), .25f);
+            Material stucco = Surface("brick", new Color(.65f, .72f, .72f), .22f);
+            brick.SetFloat("_Glossiness", .24f);
             string[] names = { "BAKERY", "MODEL SHOP", "POST OFFICE", "DINER", "BOOKS", "HARDWARE", "MARKET", "CAFE" };
             Material[] awnings = { red, green, blue, red, blue, green, red, blue };
+            float[] eaves = { 2.05f, 1.83f, 2.48f, 1.63f, 2.29f, 1.87f, 2.37f, 1.65f };
 
             for (int row = 0; row < 2; row++)
             {
@@ -31,33 +36,39 @@ namespace GarageGauntlet
                 {
                     int shop = row * 4 + i;
                     float x = -1.2f + i * 3.65f;
-                    float height = 1.80f + .34f * (shop % 3);
+                    float height = eaves[shop];
                     float front = z + face * 1.02f;
+                    float back = z - face * 1.02f;
                     Vector3 center = new Vector3(x, height / 2 + .035f, z);
                     Vector3 walls = new Vector3(3.25f, height, 2.04f);
-                    if (shop % 3 == 1)
+                    Material shell = shop == 2 || shop == 6 ? stucco : brick;
+                    bool pitched = shop == 1 || shop == 4 || shop == 6;
+                    if (shop == 3 || shop == 7)
                         Box(names[shop] + " plaster walls", center, walls, plaster);
                     else
-                        SurfaceBox(names[shop] + " brick walls", center, walls, new Vector2(.72f, .72f), brick);
-                    Box("Recessed shop roof", new Vector3(x, height + .09f, z), new Vector3(3.22f, .13f, 2.02f), roof);
-                    Box("Cornice", new Vector3(x, height + .14f, front), new Vector3(3.37f, .15f, .18f), cream);
-                    Box("Rooftop vent", new Vector3(x + .81f, height + .22f, z - face * .42f), new Vector3(.29f, .26f, .32f), roof);
+                        SurfaceBox(names[shop] + " molded masonry", center, walls, new Vector2(.62f, .62f), shell);
+                    Box("Molded foundation lip", new Vector3(x, .09f, z), new Vector3(3.34f, .17f, 2.12f), pavement);
+                    DrawShopRoof(x, z, height + .035f, face, pitched, shop == 2 || shop == 0, shell, tile, roof, cream);
 
                     for (int side = -1; side <= 1; side += 2)
                     {
                         float wx = x + side * .92f;
                         ShopWindow(wx, .56f, front, face, .99f, .72f, cream, shop % 2 == 0 ? lit : glass);
-                        ShopWindow(wx, height - .37f, front, face, .55f, .46f, cream, glass);
-                        ShopWindow(wx, height - .37f, z - face * 1.02f, -face, .55f, .46f, cream, glass);
+                        if (height > 1.75f)
+                            ShopWindow(wx, height - .36f, front, face, .58f, .43f, cream, glass);
+                        ShopWindow(wx, height - .47f, back, -face, .56f, .49f, cream, glass);
                     }
                     Box("Recessed shop door", new Vector3(x, .53f, front + face * .035f), new Vector3(.53f, .95f, .065f), awnings[shop]);
                     Box("Shop door glass", new Vector3(x, .66f, front + face * .077f), new Vector3(.34f, .46f, .018f), glass);
                     Box("Shop doorstep", new Vector3(x, .073f, front + face * .20f), new Vector3(.75f, .10f, .40f), cream);
+                    Box("Rear molded service door", new Vector3(x, .53f, back - face * .044f), new Vector3(.65f, .98f, .095f), awnings[shop]);
+                    Box("Rear threshold", new Vector3(x, .08f, back - face * .17f), new Vector3(.81f, .14f, .37f), cream);
+                    Box("Gutter downpipe", new Vector3(x - 1.45f, height * .51f, back - face * .067f), new Vector3(.084f, height * .95f, .084f), roof);
                     TownSign(names[shop], new Vector3(x, 1.24f, front + face * .05f), 1.85f, .24f, face, cream);
                     for (int stripe = 0; stripe < 9; stripe++)
                     {
                         Box("Canvas shop awning", new Vector3(x + (stripe - 4) * .272f, 1.02f, front + face * .27f),
-                            new Vector3(.273f, .055f, .56f), stripe % 2 == 0 ? awnings[shop] : cream,
+                            new Vector3(.273f, .055f, .56f), shop == 2 || stripe % 2 == 0 ? awnings[shop] : cream,
                             Quaternion.Euler(face * 13, 0, 0));
                     }
                 }
@@ -67,6 +78,41 @@ namespace GarageGauntlet
 
             TownSign("SWITCHYARD  •  MAIN ST", new Vector3(-4.12f, 1.06f, -7.15f), 2.32f, .32f, -1, cream);
             Box("Welcome sign post", new Vector3(-4.12f, .57f, -7.11f), new Vector3(.09f, 1.06f, .09f), roof);
+        }
+
+        private void DrawShopRoof(float x, float z, float eave, int face, bool pitched, bool stepped,
+            Material walls, Material tile, Material roof, Material trim)
+        {
+            if (pitched)
+            {
+                const float run = 1.13f, rise = .53f;
+                float pitch = Mathf.Atan2(rise, run) * Mathf.Rad2Deg;
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    SurfaceBox("Molded tile roof half", new Vector3(x, eave + rise / 2, z + side * run / 2),
+                        new Vector3(3.47f, .095f, Mathf.Sqrt(run * run + rise * rise)), new Vector2(.52f, .55f), tile,
+                        Quaternion.Euler(side * pitch, 0, 0));
+                    Box("Roof eave gutter", new Vector3(x, eave + .012f, z + side * run), new Vector3(3.53f, .085f, .088f), roof);
+                }
+                DrawGables(x, z, 3.25f, z - 1.02f, z + 1.02f, eave, eave + rise, walls);
+                Box("Clip-on ridge molding", new Vector3(x, eave + rise + .042f, z), new Vector3(3.49f, .072f, .135f), roof);
+                Box("Chimney cap", new Vector3(x + .90f, eave + .66f, z - face * .44f), new Vector3(.39f, .11f, .39f), trim);
+                SurfaceBox("Molded chimney", new Vector3(x + .90f, eave + .37f, z - face * .44f), new Vector3(.30f, .54f, .30f),
+                    new Vector2(.55f, .55f), walls);
+                return;
+            }
+
+            Box("Inset roof panel", new Vector3(x, eave + .042f, z), new Vector3(3.26f, .11f, 2.04f), roof);
+            Box("Front parapet", new Vector3(x, eave + .11f, z + face * 1.02f), new Vector3(3.36f, .28f, .13f), trim);
+            Box("Rear coping", new Vector3(x, eave + .09f, z - face * 1.02f), new Vector3(3.36f, .12f, .13f), trim);
+            for (int side = -1; side <= 1; side += 2)
+                Box("Side coping", new Vector3(x + side * 1.60f, eave + .09f, z), new Vector3(.13f, .12f, 2.03f), trim);
+            if (stepped)
+            {
+                Box("Raised parapet course", new Vector3(x, eave + .27f, z + face * 1.02f), new Vector3(2.23f, .22f, .15f), trim);
+                Box("Parapet crest", new Vector3(x, eave + .40f, z + face * 1.02f), new Vector3(1.31f, .11f, .18f), trim);
+            }
+            Box("Vent housing", new Vector3(x + .8f, eave + .16f, z - face * .42f), new Vector3(.38f, .27f, .34f), roof);
         }
 
         private void DrawTownSquare()
@@ -131,9 +177,9 @@ namespace GarageGauntlet
         {
             const float x = 12.9f, z = 5.56f;
             Material water = Paint(.14f, .43f, .50f);
-            water.SetFloat("_Glossiness", .77f);
+            water.SetFloat("_Glossiness", .88f);
             Material shore = Paint(.52f, .59f, .31f);
-            Material ripple = Paint(.34f, .62f, .64f);
+            Material ripple = Paint(.25f, .49f, .51f);
             Material plank = Surface("timber", new Color(.85f, .70f, .50f), .14f);
             Material posts = Paint(.43f, .31f, .20f);
             Material reed = Paint(.44f, .57f, .27f);
@@ -272,9 +318,7 @@ namespace GarageGauntlet
                 course.Locate(position, out float gap);
                 if (gap < RaceCourse.HalfWidth + .83f)
                     continue;
-                bool tall = i % 3 == 0;
-                Vector3 size = tall ? new Vector3(1.55f, 2.73f, 1.55f) : new Vector3(1.17f, 1.87f, 1.17f);
-                Model(tall ? "town/tree-large" : "town/tree-small", root, position, new Vector3(0, i * 73 % 360, 0), size);
+                DrawFlockedTree(position, i);
             }
         }
 

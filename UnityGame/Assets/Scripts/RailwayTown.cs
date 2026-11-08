@@ -106,8 +106,11 @@ namespace GarageGauntlet
         {
             Material wood = Surface("timber", new Color(.79f, .58f, .45f), .28f);
             Material trim = Paint(.69f, .40f, .23f);
-            Material grass = Paint(.29f, .44f, .31f);
-            Material plastic = Paint(.16f, .18f, .21f);
+            Material grass = ModelFlock(new Color(.32f, .38f, .23f), new Vector2(1f, 1f));
+            Material plastic = Paint(.14f, .145f, .15f);
+            plastic.mainTexture = ModelGrain();
+            plastic.mainTextureScale = Vector2.one * 2.9f;
+            plastic.SetFloat("_Glossiness", .31f);
             Material slot = Paint(.047f, .054f, .065f);
             Material contact = Paint(.69f, .66f, .57f);
             contact.SetFloat("_Glossiness", .48f);
@@ -115,10 +118,12 @@ namespace GarageGauntlet
             Material cream = Paint(.92f, .85f, .68f);
             float width = 2 * RaceCourse.BoardHalfWidth;
             float depth = 2 * RaceCourse.BoardHalfDepth;
-            Box("Workshop table", new Vector3(0, -1.44f, 0), new Vector3(width + 24, .6f, depth + 20), Paint(.19f, .27f, .34f));
+            Material worktop = Surface("timber", new Color(.48f, .37f, .30f), .23f);
+            SurfaceBox("Workshop table", new Vector3(0, -1.44f, 0), new Vector3(width + 24, .6f, depth + 20), new Vector2(13, 3), worktop);
             SurfaceBox("Wooden display board", new Vector3(0, -.56f, 0), new Vector3(width, .9f, depth), new Vector2(4.1f, 1.4f), wood);
             Box("Tabletop edge band", new Vector3(0, -.25f, 0), new Vector3(width + .1f, .12f, depth + .1f), trim);
-            Box("Felt landscape", new Vector3(0, -.105f, 0), new Vector3(width - .3f, .17f, depth - .3f), grass);
+            SurfaceBox("Flocked tabletop", new Vector3(0, -.105f, 0), new Vector3(width - .3f, .17f, depth - .3f), new Vector2(3.4f, 3.4f), grass);
+            DrawWorkbench(width, depth, wood, trim);
             Ribbon(course, RaceCourse.HalfWidth + .16f, .024f, shoulder, "Slot track bevel");
             Ribbon(course, RaceCourse.HalfWidth, .035f, plastic, "Molded slot track");
             for (int lane = 0; lane < RaceCourse.LaneCount; lane++)
@@ -506,12 +511,7 @@ namespace GarageGauntlet
             {
                 if (cube == null)
                     cube = SceneryCube(Vector3.one, Vector2.one);
-                if (!scenery.TryGetValue(material, out List<CombineInstance> meshes))
-                {
-                    meshes = new List<CombineInstance>();
-                    scenery.Add(material, meshes);
-                }
-                meshes.Add(new CombineInstance { mesh = cube, transform = Matrix4x4.TRS(position, orientation, scale) });
+                AddScenery(cube, material, position, orientation, scale);
                 return null;
             }
 
@@ -568,11 +568,21 @@ namespace GarageGauntlet
             return mesh;
         }
 
+        private void AddScenery(Mesh mesh, Material material, Vector3 position, Quaternion rotation, Vector3 scale)
+        {
+            if (!scenery.TryGetValue(material, out List<CombineInstance> meshes))
+            {
+                meshes = new List<CombineInstance>();
+                scenery.Add(material, meshes);
+            }
+            meshes.Add(new CombineInstance { mesh = mesh, transform = Matrix4x4.TRS(position, rotation, scale) });
+        }
+
         private void CombineScenery()
         {
             foreach (KeyValuePair<Material, List<CombineInstance>> batch in scenery)
             {
-                var mesh = new Mesh { name = "Tabletop scenery" };
+                var mesh = new Mesh { name = "Tabletop scenery", indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
                 mesh.CombineMeshes(batch.Value.ToArray());
                 Transform group = Group("Scenery batch", root);
                 group.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;
