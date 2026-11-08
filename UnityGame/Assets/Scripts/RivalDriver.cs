@@ -32,22 +32,20 @@ namespace GarageGauntlet
             motor.Draw(model, 0);
         }
 
-        public void Step(float dt, float elapsed, float trainX)
+        public void Step(float dt, float elapsed)
         {
             if (Finished)
                 return;
             float variation = Mathf.Sin(elapsed * 1.35f + phase) * .08f;
             float speed = motor.BrakeTarget() * (pace + variation);
-            float offset = RaceCourse.SlotOffset(lane);
-            Vector3 current = course.Lane(Distance, offset, out _);
-            Vector3 ahead = course.Lane(Distance + 4.8f, offset, out _);
-            if (current.z * ahead.z <= 0 && RailwayTown.SignalClosed(trainX, ahead.x))
+            foreach (RailwayLoop.Crossing crossing in course.Railway.Crossings)
             {
-                float room = Mathf.Max(0, Mathf.Abs(current.z) - 1.26f);
-                speed = Mathf.Min(speed, Mathf.Sqrt(17f * room));
+                float room = course.Delta(Distance, crossing.RoadDistance);
+                if (room >= 0 && room < 13 && course.Railway.SignalClosed(crossing))
+                    speed = Mathf.Min(speed, Mathf.Sqrt(17f * Mathf.Max(0, room - 1.65f)));
             }
 
-            motor.Step(speed / SlotMotor.TopSpeed, dt, trainX);
+            motor.Step(speed / SlotMotor.TopSpeed, dt);
         }
 
         public void Draw(float dt) => motor.Draw(model, dt);

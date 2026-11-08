@@ -123,16 +123,27 @@ namespace GarageGauntlet
             }
         }
 
+        private bool GridMenuOnSide => Screen.width >= Screen.height * 1.45f;
+
+        private Rect GridMenuCard
+        {
+            get
+            {
+                float width = Mathf.Min(380, GridMenuOnSide ? Width * .43f : Width - 32);
+                return new Rect(GridMenuOnSide ? 26 : (Width - width) / 2,
+                    GridMenuOnSide ? Height / 2 - 144 : 22, width, 288);
+            }
+        }
+
         private void DrawGridMenu()
         {
-            float width = Mathf.Min(380, Width - 32);
-            float x = Width >= 790 ? 26 : (Width - width) / 2;
-            float y = Screen.height > Screen.width ? 22 : Height / 2 - 144;
-            Card(new Rect(x, y, width, 288), Mint);
+            Rect card = GridMenuCard;
+            float x = card.x, y = card.y, width = card.width;
+            Card(card, Mint);
             Caption(x + 19, y + 19, width - 38, "GARAGE GAUNTLET   /   01");
             GUI.Label(new Rect(x + 18, y + 41, width - 36, 62), "Railway Rush", display);
             GUI.Label(new Rect(x + 19, y + 106, width - 38, 42),
-                "Race through Switchyard, from the Main Street shops to Mill Pond and the railway depot.", body);
+                "Race around Switchyard. Watch for the model train at both crossings.", body);
 
             if (GUI.Button(new Rect(x + 18, y + 163, width - 36, 45), "START GRAND PRIX", primary))
                 StartRace(true);
@@ -257,7 +268,6 @@ namespace GarageGauntlet
         {
             grandPrix = true;
             ResetRace();
-            town.UpdateTrain(-3.5f, 0, 1);
             state = RaceState.Ready;
         }
 
@@ -278,8 +288,8 @@ namespace GarageGauntlet
         }
 
         private static Vector2 MapPoint(Vector3 position) => new Vector2(
-            Mathf.Clamp01(.5f + position.x / (2 * RaceCourse.BoardHalfWidth)),
-            Mathf.Clamp01(.5f - position.z / (2 * RaceCourse.BoardHalfDepth)));
+            Mathf.Clamp01(.5f + (position.x - RaceCourse.BoardCenter.x) / (2 * RaceCourse.BoardHalfWidth)),
+            Mathf.Clamp01(.5f - (position.z - RaceCourse.BoardCenter.z) / (2 * RaceCourse.BoardHalfDepth)));
 
         private static void Dot(Rect route, Vector3 position, Color color, float size)
         {
@@ -292,28 +302,30 @@ namespace GarageGauntlet
         {
             const int width = 146, height = 92;
             var pixels = new Color[width * height];
-            Color rail = new Color(.55f, .36f, .23f, .8f);
-            for (int x = 1; x < width - 1; x++)
-                pixels[(height / 2) * width + x] = rail;
-            Color road = new Color(.61f, .68f, .68f, .76f);
-            for (int segment = 0; segment < course.Count; segment++)
-            {
-                Vector2 a = MapPoint(course.At(segment));
-                Vector2 b = MapPoint(course.At(segment + 1));
-                for (int step = 0; step < 10; step++)
-                {
-                    Vector2 p = Vector2.Lerp(a, b, step / 10f);
-                    int x = Mathf.RoundToInt(p.x * (width - 1));
-                    int y = Mathf.RoundToInt((1 - p.y) * (height - 1));
-                    for (int row = Mathf.Max(0, y - 1); row <= Mathf.Min(height - 1, y + 1); row++)
-                        for (int col = Mathf.Max(0, x - 1); col <= Mathf.Min(width - 1, x + 1); col++)
-                            pixels[row * width + col] = road;
-                }
-            }
+            Stroke(course.Railway.Path, new Color(.79f, .51f, .28f, .92f), 0);
+            Stroke(course, new Color(.61f, .68f, .68f, .76f), 1);
             var texture = new Texture2D(width, height, TextureFormat.RGBA32, false);
             texture.SetPixels(pixels);
             texture.Apply(false, true);
             return texture;
+
+            void Stroke(RaceCourse path, Color color, int weight)
+            {
+                for (int segment = 0; segment < path.Count; segment++)
+                {
+                    Vector2 a = MapPoint(path.At(segment));
+                    Vector2 b = MapPoint(path.At(segment + 1));
+                    for (int step = 0; step < 10; step++)
+                    {
+                        Vector2 p = Vector2.Lerp(a, b, step / 10f);
+                        int x = Mathf.RoundToInt(p.x * (width - 1));
+                        int y = Mathf.RoundToInt((1 - p.y) * (height - 1));
+                        for (int row = Mathf.Max(0, y - weight); row <= Mathf.Min(height - 1, y + weight); row++)
+                            for (int col = Mathf.Max(0, x - weight); col <= Mathf.Min(width - 1, x + weight); col++)
+                                pixels[row * width + col] = color;
+                    }
+                }
+            }
         }
 
         private void Caption(float x, float y, float width, string text) =>

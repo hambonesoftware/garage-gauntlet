@@ -127,10 +127,11 @@ namespace GarageGauntlet
 
         private void DrawWorkbench(float width, float depth, Material timber, Material trim)
         {
+            Vector3 center = RaceCourse.BoardCenter;
             for (int layer = 0; layer < 3; layer++)
             {
                 float y = -.44f - layer * .19f;
-                Box("Visible plywood lamination", new Vector3(0, y, 0), new Vector3(width + .025f, .035f, depth + .025f), trim);
+                Box("Visible plywood lamination", center + new Vector3(0, y, 0), new Vector3(width + .025f, .035f, depth + .025f), trim);
             }
 
             Material steel = Paint(.51f, .53f, .53f);
@@ -144,13 +145,13 @@ namespace GarageGauntlet
             {
                 float x = i * width / 5.3f;
                 float z = side * (depth / 2 + .054f);
-                Box("Display board screw", new Vector3(x, -.52f, z), new Vector3(.16f, .15f, .045f), steel);
-                Box("Screw slot", new Vector3(x, -.52f, z + side * .027f), new Vector3(.105f, .027f, .017f), black,
+                Box("Display board screw", center + new Vector3(x, -.52f, z), new Vector3(.16f, .15f, .045f), steel);
+                Box("Screw slot", center + new Vector3(x, -.52f, z + side * .027f), new Vector3(.105f, .027f, .017f), black,
                     Quaternion.Euler(0, 0, (i + 2) * 34));
             }
 
             const float workY = -1.14f;
-            Vector3 knife = new Vector3(15.9f, workY + .16f, -24.8f);
+            Vector3 knife = center + new Vector3(15.9f, workY + .16f, -depth / 2 - 3.3f);
             Quaternion angle = Quaternion.Euler(0, 14, 0);
             Box("Hobby knife handle", knife, new Vector3(4.15f, .28f, .52f), orange, angle);
             Box("Hobby knife collet", knife + angle * new Vector3(2.08f, 0, 0), new Vector3(.62f, .27f, .41f), black, angle);
@@ -161,7 +162,7 @@ namespace GarageGauntlet
                 Box("Knife grip rib", notch, new Vector3(.068f, .035f, .52f), black, angle);
             }
 
-            Vector3 sandingBlock = new Vector3(-17.3f, workY + .20f, -25.0f);
+            Vector3 sandingBlock = center + new Vector3(-17.3f, workY + .20f, -depth / 2 - 3.5f);
             Quaternion turn = Quaternion.Euler(0, -14, 0);
             SurfaceBox("Workbench sanding block", sandingBlock, new Vector3(3.6f, .40f, 1.6f), new Vector2(1.8f, 1), timber, turn);
             Box("Sandpaper wrap", sandingBlock + Vector3.up * .213f, new Vector3(3.54f, .045f, 1.55f), paper, turn);

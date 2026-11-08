@@ -1,6 +1,6 @@
 # Garage Gauntlet · Railway Rush
 
-Race a die-cast slot car through Switchyard on a four-lane tabletop circuit. The route runs between the Main Street shops, around Mill Pond and the town square, past Cottage Hill, and across the railway by the freight depot. The three-lap Grand Prix pits you against Ember, Switch, and Volt. Time Trial gives you the same circuit on your own with a separate personal best. The game runs locally in Unity or in the browser.
+Race a die-cast slot car around Switchyard on a four-lane tabletop circuit. Main Street, Mill Pond, the town square, and residential blocks sit inside the course. A separate railway loop passes through town and crosses the slot track twice per lap. The three-lap Grand Prix pits you against Ember, Switch, and Volt. Time Trial gives you the same circuit on your own with a separate personal best. The game runs locally in Unity or in the browser.
 
 ## Play in Unity
 

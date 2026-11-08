@@ -12,10 +12,9 @@ namespace GarageGauntlet
         private readonly Dictionary<Material, List<CombineInstance>> scenery = new Dictionary<Material, List<CombineInstance>>();
         private Mesh cube;
         private Material signalOff, signalRed;
-        public const float TrainEnd = RaceCourse.BoardHalfWidth + 5.5f;
         private sealed class CrossingSignal
         {
-            public float CrossingX;
+            public RailwayLoop.Crossing Crossing;
             public Transform Arm;
             public Renderer Lamp;
         }
@@ -23,6 +22,7 @@ namespace GarageGauntlet
         public ScaleRcCar PlayerModel { get; }
         public Transform Car => PlayerModel.Root;
         public Transform Train { get; }
+        private readonly Transform wagon;
         public Camera Camera { get; }
 
         public RailwayTown(Transform root, RaceCourse course, Shader shader)
@@ -36,17 +36,18 @@ namespace GarageGauntlet
             CombineScenery();
             PlayerModel = new ScaleRcCar(root, this.shader);
             Train = Group("Model train", root);
-            Model("realism/locomotive", Train, new Vector3(.45f, 0, 0),
-                new Vector3(0, 90, 0), new Vector3(.98f, .96f, 3.48f), "locomotive-color");
-            Model("train/train-carriage-container-red", Train, new Vector3(-2.91f, 0, 0),
-                new Vector3(0, 90, 0), new Vector3(1.05f, 1.23f, 3.10f));
+            wagon = Group("Model freight wagon", root);
+            Model("realism/locomotive", Train, Vector3.zero, Vector3.zero,
+                new Vector3(.98f, .96f, 3.48f), "locomotive-color");
+            Model("train/train-carriage-container-red", wagon, Vector3.zero, Vector3.zero,
+                new Vector3(1.05f, 1.23f, 3.10f));
 
             Camera = Group("Race camera", root).gameObject.AddComponent<Camera>();
             Camera.gameObject.AddComponent<AudioListener>();
             Camera.orthographic = true;
             Camera.clearFlags = CameraClearFlags.SolidColor;
             Camera.backgroundColor = new Color(.14f, .21f, .29f);
-            Camera.farClipPlane = 100;
+            Camera.farClipPlane = 270;
         }
 
         private static readonly Color[] SlotColors =
@@ -59,22 +60,14 @@ namespace GarageGauntlet
 
         public ScaleRcCar CreateRacer(string name) => new ScaleRcCar(root, shader, name);
 
-        public static bool SignalClosed(float trainX, float crossingX) =>
-            trainX >= crossingX - 7.6f && trainX <= crossingX + 5.15f;
-
-        public static bool TrainHits(float trainX, Vector3 position) =>
-            Mathf.Abs(position.z) < .92f && position.x >= trainX - 4.65f && position.x <= trainX + 2.65f;
-
-        public void UpdateTrain(float x, float elapsed, float dt)
+        public void UpdateTrain(RailwayLoop railway, float elapsed, float dt)
         {
-            Train.position = new Vector3(x, .13f, 0);
-            bool visible = x > -RaceCourse.BoardHalfWidth - 2.65f && x < RaceCourse.BoardHalfWidth + 4.65f;
-            if (Train.gameObject.activeSelf != visible)
-                Train.gameObject.SetActive(visible);
+            Train.SetPositionAndRotation(railway.EnginePosition + Vector3.up * .13f, Quaternion.LookRotation(railway.EngineDirection));
+            wagon.SetPositionAndRotation(railway.WagonPosition + Vector3.up * .13f, Quaternion.LookRotation(railway.WagonDirection));
             bool flash = (int)(elapsed * 7) % 2 == 0;
             foreach (CrossingSignal signal in signals)
             {
-                bool closed = SignalClosed(x, signal.CrossingX);
+                bool closed = railway.SignalClosed(signal.Crossing);
                 Quaternion target = Quaternion.Euler(0, 0, closed ? 0 : 77);
                 signal.Arm.localRotation = Quaternion.RotateTowards(signal.Arm.localRotation, target, dt * 150);
                 Material lamp = closed && flash ? signalRed : signalOff;
@@ -119,10 +112,11 @@ namespace GarageGauntlet
             float width = 2 * RaceCourse.BoardHalfWidth;
             float depth = 2 * RaceCourse.BoardHalfDepth;
             Material worktop = Surface("timber", new Color(.48f, .37f, .30f), .23f);
-            SurfaceBox("Workshop table", new Vector3(0, -1.44f, 0), new Vector3(width + 24, .6f, depth + 20), new Vector2(13, 3), worktop);
-            SurfaceBox("Wooden display board", new Vector3(0, -.56f, 0), new Vector3(width, .9f, depth), new Vector2(4.1f, 1.4f), wood);
-            Box("Tabletop edge band", new Vector3(0, -.25f, 0), new Vector3(width + .1f, .12f, depth + .1f), trim);
-            SurfaceBox("Flocked tabletop", new Vector3(0, -.105f, 0), new Vector3(width - .3f, .17f, depth - .3f), new Vector2(3.4f, 3.4f), grass);
+            Vector3 center = RaceCourse.BoardCenter;
+            SurfaceBox("Workshop table", center + Vector3.down * 1.44f, new Vector3(width + 24, .6f, depth + 20), new Vector2(13, 3), worktop);
+            SurfaceBox("Wooden display board", center + Vector3.down * .56f, new Vector3(width, .9f, depth), new Vector2(4.1f, 1.4f), wood);
+            Box("Tabletop edge band", center + Vector3.down * .25f, new Vector3(width + .1f, .12f, depth + .1f), trim);
+            SurfaceBox("Flocked tabletop", center + Vector3.down * .105f, new Vector3(width - .3f, .17f, depth - .3f), new Vector2(3.4f, 3.4f), grass);
             DrawWorkbench(width, depth, wood, trim);
             Ribbon(course, RaceCourse.HalfWidth + .16f, .024f, shoulder, "Slot track bevel");
             Ribbon(course, RaceCourse.HalfWidth, .035f, plastic, "Molded slot track");
@@ -140,7 +134,7 @@ namespace GarageGauntlet
             {
                 Vector3 at = course.At(i);
                 Vector3 tangent = course.Tangent(i);
-                if (Mathf.Abs(at.z) < 1.55f ||
+                if (NearCrossing(course, course.DistanceAt(i), 2.4f) ||
                     Mathf.Abs(Vector3.SignedAngle(course.Tangent(i - 2), course.Tangent(i + 2), Vector3.up)) < 10)
                     continue;
                 Vector3 side = Vector3.Cross(Vector3.up, tangent) * (RaceCourse.HalfWidth + .03f);
@@ -153,7 +147,7 @@ namespace GarageGauntlet
             for (float distance = 1.7f; distance < course.Length - 1.2f; distance += 3.7f)
             {
                 Vector3 at = course.Sample(distance, out Vector3 direction);
-                if (Mathf.Abs(at.z) > 1)
+                if (!NearCrossing(course, distance, 1.8f))
                     Box("Snap track section joint", at + Vector3.up * .039f, new Vector3(4.23f, .003f, .038f),
                         slot, Quaternion.LookRotation(direction));
             }
@@ -183,6 +177,7 @@ namespace GarageGauntlet
         private void DrawTown(RaceCourse course)
         {
             DrawMainStreet();
+            DrawTownBlocks();
             DrawTownSquare();
             DrawMillPond();
             DrawDepotYard();
@@ -320,6 +315,7 @@ namespace GarageGauntlet
 
         private void DrawRailway(RaceCourse course)
         {
+            RaceCourse rail = course.Railway.Path;
             Material ballast = Surface("ballast", new Color(.74f, .70f, .64f), .08f);
             Material sleepers = Paint(.22f, .16f, .12f);
             Material metal = Paint(.74f, .76f, .73f);
@@ -327,70 +323,59 @@ namespace GarageGauntlet
             Material steel = Paint(.62f, .64f, .64f);
             steel.SetFloat("_Metallic", .53f);
             steel.SetFloat("_Glossiness", .54f);
-            float width = 2 * RaceCourse.BoardHalfWidth;
-            SurfaceBox("Gravel rail bed", new Vector3(0, .021f, 0), new Vector3(width, .05f, 1.55f),
-                new Vector2(1.42f, 1.20f), ballast);
-            int ties = Mathf.FloorToInt((RaceCourse.BoardHalfWidth - .2f) / .52f);
-            for (int i = -ties; i <= ties; i++)
+            Ribbon(rail, .79f, .047f, ballast, "Loop ballast");
+            int ties = Mathf.RoundToInt(rail.Length / .52f);
+            for (int i = 0; i < ties; i++)
             {
-                float x = i * .52f;
-                Box("Rail tie", new Vector3(x, .061f, 0), new Vector3(.17f, .053f, 1.30f), sleepers);
-                if (x > 5.5f)
-                {
-                    Box("North tie plate", new Vector3(x, .093f, .43f), new Vector3(.135f, .018f, .17f), rust);
-                    Box("South tie plate", new Vector3(x, .093f, -.43f), new Vector3(.135f, .018f, .17f), rust);
-                }
+                Vector3 point = rail.Sample(rail.Length * i / ties, out Vector3 forward);
+                Quaternion turn = Quaternion.LookRotation(forward);
+                Box("Rail tie", point + Vector3.up * .064f, new Vector3(1.30f, .053f, .17f), sleepers, turn);
             }
-            foreach (float rail in new[] { -.43f, .43f })
+            foreach (float offset in new[] { -.43f, .43f })
             {
-                Box("Oxidized rail web", new Vector3(0, .107f, rail), new Vector3(width, .064f, .043f), rust);
-                Box("Polished rail head", new Vector3(0, .14f, rail), new Vector3(width, .018f, .062f), steel);
+                Ribbon(rail, .030f, .107f, rust, "Oxidized rail web", offset);
+                Ribbon(rail, .034f, .14f, steel, "Polished rail head", offset);
             }
+
             Material warning = Paint(.98f, .65f, .19f);
             Material stripe = Paint(.90f, .87f, .74f);
+            Material timber = Surface("timber", new Color(.82f, .76f, .69f), .16f);
             signalOff = Paint(.30f, .14f, .12f);
             signalRed = Glow(1, .16f, .08f);
-            foreach (Vector3 crossing in course.Crossings)
+            foreach (RailwayLoop.Crossing crossing in course.Railway.Crossings)
             {
-                DetailCrossing(course, crossing);
-                float x = crossing.x - 2.18f;
-                float z = crossing.x > 0 ? -1.25f : 1.25f;
-                Box("Crossing signal post", new Vector3(x, .65f, z), new Vector3(.13f, 1.25f, .13f), metal);
-                Box("Signal housing", new Vector3(x, 1.19f, z), new Vector3(.35f, .33f, .29f), warning);
-                Renderer lamp = Box("Crossing lamp", new Vector3(x, 1.39f, z), new Vector3(.29f, .14f, .27f), signalOff, parent: root);
-                Transform arm = Group("Crossing arm", root);
-                arm.localPosition = new Vector3(x, .72f, z);
+                Vector3 acrossRail = Vector3.Cross(Vector3.up, crossing.RailDirection);
+                float deckWidth = 4.56f / Mathf.Max(.75f, Mathf.Abs(Vector3.Dot(acrossRail, crossing.RoadDirection)));
+                Quaternion railTurn = Quaternion.LookRotation(acrossRail);
+                for (int plank = -1; plank <= 1; plank++)
+                    SurfaceBox("Timber crossing deck", crossing.Position + acrossRail * (plank * .265f) + Vector3.up * .104f,
+                        new Vector3(deckWidth, .046f, .247f), new Vector2(1.25f, .38f), timber, railTurn);
+
+                Vector3 approach = course.Sample(crossing.RoadDistance - 2.65f, out Vector3 forward);
+                Vector3 right = Vector3.Cross(Vector3.up, forward);
+                Quaternion roadTurn = Quaternion.LookRotation(forward);
+                Vector3 post = approach - right * 2.53f;
+                Box("Crossing stop line", approach + Vector3.up * .050f, new Vector3(3.98f, .012f, .14f), stripe, roadTurn);
+                Box("Crossing signal post", post + Vector3.up * .65f, new Vector3(.13f, 1.25f, .13f), metal);
+                Box("Signal housing", post + Vector3.up * 1.19f, new Vector3(.35f, .33f, .29f), warning, roadTurn);
+                Renderer lamp = Box("Crossing lamp", post + Vector3.up * 1.39f, new Vector3(.29f, .14f, .27f), signalOff, roadTurn, root);
+                Transform hinge = Group("Crossing gate", root);
+                hinge.SetPositionAndRotation(post + Vector3.up * .72f, roadTurn);
+                Transform arm = Group("Crossing arm", hinge);
                 arm.localRotation = Quaternion.Euler(0, 0, 77);
-                for (int section = 0; section < 7; section++)
-                    Box("Arm stripe", new Vector3(.17f + .31f * section, 0, 0), new Vector3(.31f, .10f, .09f),
+                for (int section = 0; section < 8; section++)
+                    Box("Arm stripe", new Vector3(.16f + .31f * section, 0, 0), new Vector3(.31f, .10f, .09f),
                         section % 2 == 0 ? signalRed : stripe, parent: arm);
-                signals.Add(new CrossingSignal { CrossingX = crossing.x, Arm = arm, Lamp = lamp });
+                signals.Add(new CrossingSignal { Crossing = crossing, Arm = arm, Lamp = lamp });
             }
         }
 
-        private void DetailCrossing(RaceCourse course, Vector3 crossing)
+        private static bool NearCrossing(RaceCourse course, float distance, float range)
         {
-            Material timber = Surface("timber", new Color(.82f, .76f, .69f), .16f);
-            for (int i = 0; i < 3; i++)
-            {
-                float z = (i - 1) * .266f;
-                SurfaceBox("Timber crossing deck", new Vector3(crossing.x, .103f, z),
-                    new Vector3(4.54f, .048f, .243f), new Vector2(1.25f, .38f), timber);
-            }
-            Material chalk = Paint(.81f, .78f, .66f);
-            Material pole = Paint(.40f, .44f, .45f);
-            float gate = course.Locate(crossing, out _);
-            Vector3 marking = course.Sample(gate - 2.15f, out Vector3 forward);
-            Vector3 side = Vector3.Cross(Vector3.up, forward);
-            Box("Stop line", marking + Vector3.up * .05f, new Vector3(3.75f, .011f, .13f), chalk,
-                Quaternion.LookRotation(forward));
-            Vector3 sign = marking - side * 2.52f;
-            Box("Crossbuck mast", sign + Vector3.up * .72f, new Vector3(.065f, 1.48f, .065f), pole);
-            Quaternion front = Quaternion.LookRotation(forward);
-            Box("Crossbuck left board", sign + Vector3.up * 1.44f, new Vector3(.57f, .093f, .055f), chalk,
-                front * Quaternion.Euler(0, 0, 42));
-            Box("Crossbuck right board", sign + Vector3.up * 1.44f, new Vector3(.57f, .093f, .055f), chalk,
-                front * Quaternion.Euler(0, 0, -42));
+            foreach (RailwayLoop.Crossing crossing in course.Railway.Crossings)
+                if (Mathf.Abs(course.Delta(distance, crossing.RoadDistance)) < range)
+                    return true;
+            return false;
         }
 
         private void Ribbon(RaceCourse course, float halfWidth, float y, Material material, string name,
@@ -411,7 +396,7 @@ namespace GarageGauntlet
                 vertices[current + 1] = center + side;
                 uv[current] = new Vector2(vertices[current].x, vertices[current].z) / 2.3f;
                 uv[current + 1] = new Vector2(vertices[current + 1].x, vertices[current + 1].z) / 2.3f;
-                if (!breakAtCrossing || (Mathf.Abs(course.At(i).z) > .8f && Mathf.Abs(course.At(i + 1).z) > .8f))
+                if (!breakAtCrossing || !NearCrossing(course, (course.DistanceAt(i) + course.DistanceAt(i + 1)) / 2, .95f))
                 {
                     triangles.Add(current);
                     triangles.Add(next);

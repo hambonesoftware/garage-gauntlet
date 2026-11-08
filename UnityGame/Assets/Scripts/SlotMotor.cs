@@ -51,13 +51,13 @@ namespace GarageGauntlet
             return target;
         }
 
-        public SlotIncident Step(float throttle, float dt, float trainX)
+        public SlotIncident Step(float throttle, float dt)
         {
             Trigger = Mathf.Clamp01(throttle);
             if (incident != SlotIncident.None)
             {
                 recovery = Mathf.Max(0, recovery - dt);
-                if (recovery == 0 && !TouchesTrain(Distance, 0, trainX))
+                if (recovery == 0 && !TouchesTrain(Distance, 0))
                 {
                     incident = SlotIncident.None;
                     SlideAngle = slideVelocity = 0;
@@ -70,7 +70,7 @@ namespace GarageGauntlet
             float bend = course.Curvature(Distance);
             float laneRadius = Mathf.Clamp(1 - bend * lane, .45f, 1.65f);
             float next = Mathf.Min(course.Length * RaceProgress.TotalLaps, Distance + Speed * dt / laneRadius);
-            if (TouchesTrain(next, SlideAngle, trainX))
+            if (TouchesTrain(next, SlideAngle))
                 return Stop(SlotIncident.Train, 1.15f, Mathf.Sign(bend));
 
             Distance = next;
@@ -100,13 +100,11 @@ namespace GarageGauntlet
             return reason;
         }
 
-        private bool TouchesTrain(float distance, float angle, float trainX)
+        private bool TouchesTrain(float distance, float angle)
         {
-            if (trainX < -RaceCourse.BoardHalfWidth - 2.65f || trainX > RaceCourse.BoardHalfWidth + 4.65f)
-                return false;
             Pose(distance, angle, out Vector3 guide, out Vector3 center, out Vector3 heading);
-            return RailwayTown.TrainHits(trainX, guide) || RailwayTown.TrainHits(trainX, center)
-                || RailwayTown.TrainHits(trainX, center - heading * TailOffset);
+            RailwayLoop rail = course.Railway;
+            return rail.Hits(guide) || rail.Hits(center) || rail.Hits(center - heading * TailOffset);
         }
 
         internal void Pose(float distance, float angle, out Vector3 guide, out Vector3 center, out Vector3 heading)

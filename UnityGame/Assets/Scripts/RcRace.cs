@@ -4,8 +4,8 @@ namespace GarageGauntlet
 {
     public sealed partial class RcRace : MonoBehaviour
     {
-        private const string TrialBestKey = "garage-gauntlet-slot-trial-switchyard";
-        private const string PrixBestKey = "garage-gauntlet-slot-prix-switchyard";
+        private const string TrialBestKey = "garage-gauntlet-slot-trial-twin-loops";
+        private const string PrixBestKey = "garage-gauntlet-slot-prix-twin-loops";
         private const float MaximumStep = .025f;
         private enum RaceState { Ready, Countdown, Racing, Paused, Finished }
 
@@ -21,7 +21,6 @@ namespace GarageGauntlet
         private Camera raceCamera;
         private bool grandPrix = true, record;
         private float countdown, elapsed, best, lapStarted, bestLap;
-        private float trainX;
         private int finalPlace;
         private string notice;
         private float noticeUntil;
@@ -45,7 +44,6 @@ namespace GarageGauntlet
                 new RivalDriver(course, town, "Volt", 3, .94f)
             };
             ResetRace();
-            town.UpdateTrain(-3.5f, 0, 1);
             UpdateCamera(true);
         }
 
@@ -62,8 +60,8 @@ namespace GarageGauntlet
             record = false;
             notice = string.Empty;
             noticeUntil = 0;
-            trainX = -RailwayTown.TrainEnd;
-            town.UpdateTrain(trainX, 0, 1);
+            course.Railway.SetTrainDistance(0);
+            town.UpdateTrain(course.Railway, 0, 1);
             foreach (RivalDriver rival in rivals)
             {
                 rival.Reset();
@@ -105,6 +103,11 @@ namespace GarageGauntlet
                 StartRace(grandPrix);
 
             float dt = Time.deltaTime;
+            if (state == RaceState.Ready)
+            {
+                course.Railway.SetTrainDistance(Time.unscaledTime * 5.2f);
+                town.UpdateTrain(course.Railway, Time.unscaledTime, dt);
+            }
             float throttle = state == RaceState.Countdown || state == RaceState.Racing ? ReadTrigger() : 0;
             if (state == RaceState.Countdown)
             {
@@ -140,13 +143,13 @@ namespace GarageGauntlet
         private void Step(float throttle, float dt)
         {
             elapsed += dt;
-            trainX = -RailwayTown.TrainEnd + Mathf.Repeat(elapsed * 5.65f, RailwayTown.TrainEnd * 2);
-            town.UpdateTrain(trainX, elapsed, dt);
+            course.Railway.SetTrainDistance(elapsed * 6.5f);
+            town.UpdateTrain(course.Railway, elapsed, dt);
             if (grandPrix)
                 foreach (RivalDriver rival in rivals)
-                    rival.Step(dt, elapsed, trainX);
+                    rival.Step(dt, elapsed);
 
-            SlotIncident incident = motor.Step(throttle, dt, trainX);
+            SlotIncident incident = motor.Step(throttle, dt);
             if (incident != SlotIncident.None)
             {
                 sound.Signal(RaceSound.Hit);
@@ -198,9 +201,9 @@ namespace GarageGauntlet
 
         private bool CrossingWarning()
         {
-            foreach (Vector3 crossing in course.Crossings)
+            foreach (RailwayLoop.Crossing crossing in course.Railway.Crossings)
             {
-                if ((car.position - crossing).sqrMagnitude < 73 && RailwayTown.SignalClosed(trainX, crossing.x))
+                if ((car.position - crossing.Position).sqrMagnitude < 100 && course.Railway.SignalClosed(crossing))
                     return true;
             }
             return false;
@@ -218,14 +221,35 @@ namespace GarageGauntlet
         {
             float aspect = Screen.width / (float)Mathf.Max(1, Screen.height);
             bool overview = state == RaceState.Ready;
-            Vector3 target = overview ? Vector3.zero : car.position + car.forward * motor.Speed * .125f;
-            float size = overview ? Mathf.Max(25.5f, 34f / aspect) : Mathf.Max(7.45f, 5.8f / aspect);
-            Vector3 offset = new Vector3(5, 15, -12);
+            Vector3 target = car.position + car.forward * motor.Speed * .125f;
+            float size = Mathf.Max(7.45f, 5.8f / aspect);
+            Vector3 offset = overview ? new Vector3(4, 21, -10) * 5 : new Vector3(5, 15, -12);
+            Quaternion rotation = Quaternion.LookRotation(-offset);
+            if (overview)
+                FrameBoard(rotation, aspect, out target, out size);
             float blend = snap ? 1 : 1 - Mathf.Exp(-6 * Time.deltaTime);
-            Vector3 cameraTarget = target + offset * (overview ? 2.25f : 1);
-            raceCamera.transform.position = Vector3.Lerp(raceCamera.transform.position, cameraTarget, blend);
-            raceCamera.transform.rotation = Quaternion.LookRotation(-offset);
+            raceCamera.transform.position = Vector3.Lerp(raceCamera.transform.position, target + offset, blend);
+            raceCamera.transform.rotation = Quaternion.Slerp(raceCamera.transform.rotation, rotation, blend);
             raceCamera.orthographicSize = Mathf.Lerp(raceCamera.orthographicSize, size, blend);
         }
+
+        private void FrameBoard(Quaternion rotation, float aspect, out Vector3 target, out float size)
+        {
+            Rect menu = GridMenuCard;
+            float left = GridMenuOnSide ? menu.xMax / Width + .024f : .045f;
+            float top = GridMenuOnSide ? .06f : menu.yMax / Height + .03f;
+            const float right = .955f, bottom = .95f;
+            Vector3 horizontal = rotation * Vector3.right;
+            Vector3 vertical = rotation * Vector3.up;
+            size = Mathf.Max(ProjectedExtent(horizontal) / (aspect * Mathf.Max(.15f, right - left)),
+                ProjectedExtent(vertical) / Mathf.Max(.15f, bottom - top));
+            target = RaceCourse.BoardCenter + Vector3.up * 1.4f
+                - horizontal * ((left + right - 1) * size * aspect)
+                + vertical * ((top + bottom - 1) * size);
+        }
+
+        private static float ProjectedExtent(Vector3 axis) =>
+            (RaceCourse.BoardHalfWidth + 12) * Mathf.Abs(axis.x) + 3.2f * Mathf.Abs(axis.y)
+            + (RaceCourse.BoardHalfDepth + 10) * Mathf.Abs(axis.z);
     }
 }

@@ -10,24 +10,28 @@ namespace GarageGauntlet
 
         public const float HalfWidth = 2.15f;
         public const int LaneCount = 4;
-        public const float BoardHalfWidth = 28.5f;
-        public const float BoardHalfDepth = 21.5f;
+        public const float BoardHalfWidth = 49;
+        public const float BoardHalfDepth = 39;
+        public static readonly Vector3 BoardCenter = new Vector3(7, 0, 10);
         public static float SlotOffset(int lane) => (lane - 1.5f) * 1.01f;
         public float Length => distances[points.Count];
         public int Count => points.Count;
-        public IReadOnlyList<Vector3> Crossings { get; }
+        public RailwayLoop Railway { get; }
 
-        public RaceCourse()
+        public RaceCourse() : this(new[]
         {
-            Vector3[] corners =
-            {
-                Point(0, -11), Point(6, -11), Point(12, -11), Point(17, -8),
-                Point(20, -3), Point(20, 3), Point(23, 9), Point(21, 15),
-                Point(15, 16), Point(9, 13), Point(4, 8), Point(-1, 8),
-                Point(-6, 12), Point(-13, 16), Point(-20, 14), Point(-23, 9),
-                Point(-22, 3), Point(-22, -3), Point(-22, -9), Point(-18, -15),
-                Point(-11, -16), Point(-6, -12)
-            };
+            Point(0, -22), Point(14, -22), Point(25, -23), Point(34, -17),
+            Point(36, -8), Point(35, 2), Point(37, 12), Point(32, 21),
+            Point(23, 25), Point(11, 24), Point(2, 25), Point(-12, 24),
+            Point(-26, 25), Point(-34, 20), Point(-37, 12), Point(-36, 2),
+            Point(-37, -9), Point(-32, -20), Point(-22, -25), Point(-13, -23), Point(-7, -22)
+        })
+        {
+            Railway = new RailwayLoop(this);
+        }
+
+        internal RaceCourse(Vector3[] corners)
+        {
             for (int i = 0; i < corners.Length; i++)
             {
                 Vector3 a = corners[(i + corners.Length - 1) % corners.Length];
@@ -46,20 +50,10 @@ namespace GarageGauntlet
             for (int i = 0; i < Count; i++)
                 distances.Add(distances[i] + Vector3.Distance(At(i), At(i + 1)));
 
-            var crossings = new List<Vector3>();
-            for (int i = 0; i < Count; i++)
-            {
-                Vector3 start = At(i);
-                Vector3 end = At(i + 1);
-                if ((start.z < 0) == (end.z < 0))
-                    continue;
-                float fraction = -start.z / (end.z - start.z);
-                crossings.Add(Vector3.Lerp(start, end, fraction));
-            }
-            Crossings = crossings;
         }
 
         public Vector3 At(int index) => points[(index + Count) % Count];
+        public float DistanceAt(int index) => distances[index];
         public Vector3 Tangent(int index) => (At(index + 1) - At(index - 1)).normalized;
         public static Vector3 Point(float x, float z) => new Vector3(x, 0, z);
         public float Delta(float from, float to) => Mathf.Repeat(to - from + Length / 2, Length) - Length / 2;

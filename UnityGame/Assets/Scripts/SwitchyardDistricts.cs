@@ -28,8 +28,8 @@ namespace GarageGauntlet
 
             for (int row = 0; row < 2; row++)
             {
-                int face = row == 0 ? -1 : 1;
-                float z = row == 0 ? -6.75f : -15.05f;
+                int face = -1;
+                float z = row == 0 ? -17.75f : -12.15f;
                 Box("Main Street sidewalk", new Vector3(4.25f, .013f, z + face * 1.14f),
                     new Vector3(15.25f, .07f, 1.32f), pavement);
                 for (int i = 0; i < 4; i++)
@@ -76,8 +76,58 @@ namespace GarageGauntlet
                     StreetLamp(.63f + i * 3.65f, z + face * 1.62f, roof, lit);
             }
 
-            TownSign("SWITCHYARD  •  MAIN ST", new Vector3(-4.12f, 1.06f, -7.15f), 2.32f, .32f, -1, cream);
-            Box("Welcome sign post", new Vector3(-4.12f, .57f, -7.11f), new Vector3(.09f, 1.06f, .09f), roof);
+            TownSign("SWITCHYARD  •  MAIN ST", new Vector3(-4.12f, 1.06f, -18.15f), 2.32f, .32f, -1, cream);
+            Box("Welcome sign post", new Vector3(-4.12f, .57f, -18.11f), new Vector3(.09f, 1.06f, .09f), roof);
+        }
+
+        private void DrawTownBlocks()
+        {
+            Material pavement = Surface("asphalt", new Color(.68f, .66f, .60f), .12f);
+            Material sidewalk = Paint(.56f, .52f, .43f);
+            Material poles = Paint(.18f, .21f, .21f);
+            Material lamps = Glow(.85f, .65f, .37f);
+            Color[] walls = { new Color(.89f, .78f, .65f), new Color(.78f, .88f, .89f), new Color(.88f, .83f, .73f) };
+
+            SurfaceBox("Market Lane", new Vector3(4.26f, .009f, -15.1f), new Vector3(17.6f, .049f, 1.74f),
+                new Vector2(2.6f, 1.7f), pavement);
+            SurfaceBox("Station approach", new Vector3(5.5f, .009f, -7.6f), new Vector3(1.68f, .049f, 13.4f),
+                new Vector2(1.5f, 2.2f), pavement);
+            SurfaceBox("Town Hall walk", new Vector3(.7f, .016f, 8.78f), new Vector3(1.45f, .060f, 7.15f),
+                new Vector2(1.25f, 1.3f), sidewalk);
+
+            for (int block = 0; block < 2; block++)
+            {
+                float center = block == 0 ? -15.3f : 20.7f;
+                float lane = block == 0 ? -14.1f : -10.55f;
+                float spacing = block == 0 ? 2.92f : 4.15f;
+                SurfaceBox("Residential lane", new Vector3(center, .009f, lane), new Vector3(13.6f, .049f, 1.80f),
+                    new Vector2(2.55f, 1.5f), pavement);
+                for (int side = -1; side <= 1; side += 2)
+                {
+                    Box("Residential sidewalk", new Vector3(center, .026f, lane + side * 1.1f), new Vector3(13.6f, .06f, .49f), sidewalk);
+                    for (int lot = 0; lot < 3; lot++)
+                    {
+                        float x = center + (lot - 1) * 4.18f;
+                        float z = lane + side * spacing;
+                        Craftsman(x, z, side == 1 ? 0 : 180, walls[(block + lot + (side + 1) / 2) % walls.Length]);
+                        Box("Front garden path", new Vector3(x, .018f, (z + lane + side * .84f) / 2),
+                            new Vector3(.32f, .040f, spacing - .86f), sidewalk);
+                    }
+                    StreetLamp(center - 5.8f, lane + side * 1.22f, poles, lamps);
+                    StreetLamp(center + 5.8f, lane + side * 1.22f, poles, lamps);
+                }
+            }
+
+            int tree = 40;
+            foreach (Vector3 position in new[]
+            {
+                RaceCourse.Point(-32, -13), RaceCourse.Point(-30, -8), RaceCourse.Point(-31, 5), RaceCourse.Point(-31, 12),
+                RaceCourse.Point(-29, 17), RaceCourse.Point(-18, 20), RaceCourse.Point(-12, 19), RaceCourse.Point(5, 20),
+                RaceCourse.Point(14, 19), RaceCourse.Point(23, 18), RaceCourse.Point(29, 13), RaceCourse.Point(30, 6),
+                RaceCourse.Point(40, 26), RaceCourse.Point(36, 33), RaceCourse.Point(29, 36), RaceCourse.Point(19, 34),
+                RaceCourse.Point(7, 34), RaceCourse.Point(-4, 36), RaceCourse.Point(-15, 34), RaceCourse.Point(-18, 31)
+            })
+                DrawFlockedTree(position, tree++);
         }
 
         private void DrawShopRoof(float x, float z, float eave, int face, bool pitched, bool stepped,
@@ -279,7 +329,7 @@ namespace GarageGauntlet
             {
                 float x = -15.85f + i * 3.23f;
                 Craftsman(x, 10.25f, i == 1 ? 8 : -5, houseColors[i]);
-                House(i == 1 ? "building-type-g" : "building-type-a", -4.5f + 4.1f * i, -18.83f, 180,
+                House(i == 1 ? "building-type-g" : "building-type-a", -4.5f + 4.1f * i, -6.3f, 180,
                     i == 1 ? "variation-c" : "variation-b");
                 Box("Kitchen garden soil", new Vector3(x - .86f, .013f, 9.00f), new Vector3(.95f, .064f, .60f), soil);
                 for (int plant = 0; plant < 4; plant++)
@@ -296,17 +346,13 @@ namespace GarageGauntlet
             }
             TownSign("COTTAGE HILL", new Vector3(-7.2f, .75f, 8.1f), 1.62f, .24f, -1, fence);
             Box("Cottage Hill sign post", new Vector3(-7.2f, .40f, 8.12f), new Vector3(.078f, .8f, .078f), soil);
-            House("building-type-d", 14.5f, -17.45f, 150, "variation-c");
-            House("building-type-g", 19.1f, -14.43f, 125, "variation-b");
-            House("building-type-a", 24.6f, -10.0f, 100, "variation-c");
-
             Vector2[] trees =
             {
                 new Vector2(-26, 12), new Vector2(-25, -9), new Vector2(-18, 18.6f), new Vector2(-12, 19.2f),
                 new Vector2(-7.7f, 16.8f), new Vector2(-4.9f, 18.5f), new Vector2(4.5f, 18.1f), new Vector2(7.8f, 18.8f),
                 new Vector2(13, 19.4f), new Vector2(19, 19), new Vector2(24.2f, 17.7f), new Vector2(26.3f, 10.1f),
-                new Vector2(26.4f, 5), new Vector2(25.1f, -4.7f), new Vector2(22.7f, -14.8f), new Vector2(17.3f, -17.9f),
-                new Vector2(8.3f, -19.4f), new Vector2(-9.2f, -19.3f), new Vector2(-17.4f, -19), new Vector2(-24.7f, -15.3f),
+                new Vector2(26.4f, 5), new Vector2(28.4f, -4.7f), new Vector2(28.7f, -14.8f), new Vector2(17.3f, -17.9f),
+                new Vector2(12.3f, -18.4f), new Vector2(-9.2f, -19.3f), new Vector2(-17.4f, -19), new Vector2(-24.7f, -15.3f),
                 new Vector2(-18.2f, -7.1f), new Vector2(-13.8f, -9.7f), new Vector2(-10.2f, -7.6f), new Vector2(-7.2f, -7.3f),
                 new Vector2(-19.4f, 6.7f), new Vector2(-8.5f, 5.6f), new Vector2(-5.1f, 6.1f), new Vector2(5.7f, 3.7f),
                 new Vector2(6.7f, -3.15f), new Vector2(10.3f, -3.65f), new Vector2(14.1f, -4.6f), new Vector2(15.8f, -1.95f),
