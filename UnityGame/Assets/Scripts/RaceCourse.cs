@@ -23,10 +23,11 @@ namespace GarageGauntlet
         public RaceCourse() : this(new[]
         {
             Point(0, -22), Point(14, -22), Point(25, -23), Point(33, -19),
-            Point(36, -12), Point(35, 2), Point(36, 9), Point(31, 13),
-            Point(29, 17), Point(31, 22), Point(23, 25), Point(11, 24), Point(2, 25), Point(-12, 24),
+            Point(36, -12), Point(35, 2), Point(35.5f, 9), Point(34.5f, 16),
+            Point(31, 22.5f), Point(24.5f, 26.5f), Point(17, 27.5f), Point(10, 27),
+            Point(4, 24), Point(-3, 21.5f), Point(-12, 21.7f), Point(-19, 23.4f),
             Point(-26, 25), Point(-34, 20), Point(-37, 12), Point(-36, 2),
-            Point(-37, -9), Point(-32, -20), Point(-22, -25), Point(-13, -23), Point(-7, -22)
+            Point(-38.2f, -5), Point(-36.5f, -13), Point(-32, -20), Point(-22, -25), Point(-13, -23), Point(-7, -22)
         })
         {
             Railway = new RailwayLoop(this);

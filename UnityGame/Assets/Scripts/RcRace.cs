@@ -4,8 +4,8 @@ namespace GarageGauntlet
 {
     public sealed partial class RcRace : MonoBehaviour
     {
-        private const string TrialBestKey = "garage-gauntlet-slot-trial-maple-junction";
-        private const string PrixBestKey = "garage-gauntlet-slot-prix-maple-junction";
+        private const string TrialBestKey = "garage-gauntlet-slot-trial-maple-junction-sweeper";
+        private const string PrixBestKey = "garage-gauntlet-slot-prix-maple-junction-sweeper";
         private const float MaximumStep = .025f;
         private enum RaceState { Ready, Countdown, Racing, Paused, Finished }
 

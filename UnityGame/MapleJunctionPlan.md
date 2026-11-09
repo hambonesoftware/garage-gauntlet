@@ -9,14 +9,14 @@ The 98 × 86 layout-unit board keeps the original Switchyard station, freight st
 | District | Place and purpose | Reserved work |
 | --- | --- | --- |
 | Main Street | The through-highway doubles as the slot straight. The shops face the highway across curb parking and sidewalks, with a service lane behind them and a civic approach toward the hall. | The diner and hardware store anchor the existing frontage. Theater and filling-station lots extend it east. Complete a coordinated dozen-building block with storefront glazing, street furniture, and pedestrians. |
-| Cottage Hill | East of the pond. A winding lane climbs into residential lots while the slot track bends along the ridge. | Individual porches, garage courts, gardens, driveways, leaning fences, sheds, and mailboxes. Keep tall trees behind the racing sightline. |
+| Cottage Hill | East of the pond. A winding lane climbs into residential lots while the slot track takes a broad sweep around the ridge. | Individual porches, garage courts, gardens, driveways, leaning fences, sheds, and mailboxes. Keep tall trees behind the racing sightline. |
 | Switchyard | The depot, freight sheds, and working railway organize the west side. Freight access comes up from the south. | Warehouse and loading apron, lumber racks, engine servicing, and trackside clutter. Preserve the two active grade crossings and the raised flyover above both sides of the turnaround. |
 | Mill Pond | The low ground between the depot and Cottage Hill. A park trail links the civic space to the hillside. | Keep the fishing pier and reserve the picnic shelter, drainage channel, and footbridge. Add ground foam at the banks and a worn path between the shelter and water. |
 | Outskirts | The north edge is separated from town by the race route, a service road, and the banks of the railway cutting. | Farmhouse, old barn, field rows, and a grain elevator. A sparse tree line keeps the farmland open and makes the cutting read as a distinct place. |
 
 ## Race and camera
 
-The lap starts along Main Street, turns across the east grade crossing, threads the Cottage Hill bends, opens along the farm edge, and crosses the railway again in the northwest. The west ridge leads into a wooded descent, then the car climbs the Switchyard flyover and drops back onto Main Street. The grid camera shows the board and plywood edge, then lowers to an oblique chase view during the countdown. The lower angle must keep the car, throttle warning, and upcoming curve readable.
+The lap starts along Main Street, turns across the east grade crossing, and sweeps around Cottage Hill. A left-right sequence follows the farm edge before the northwest railway crossing. The west ridge drops into a downhill kink and a tightening approach to the Switchyard flyover, then the car returns to Main Street. The grid camera shows the board and plywood edge, then lowers to an oblique chase view during the countdown. The lower angle must keep the car, throttle warning, and upcoming curve readable.
 
 ## Scale and materials
 
