@@ -11,6 +11,22 @@ namespace GarageGauntlet
         private readonly List<CrossingSignal> signals = new List<CrossingSignal>();
         private readonly Dictionary<Material, List<CombineInstance>> scenery = new Dictionary<Material, List<CombineInstance>>();
         private Mesh cube;
+        private readonly List<Object> owned = new List<Object>();
+
+        internal T Own<T>(T asset) where T : Object
+        {
+            owned.Add(asset);
+            return asset;
+        }
+
+        public void Release()
+        {
+            root.gameObject.SetActive(false);
+            Object.Destroy(root.gameObject);
+            foreach (Object asset in owned)
+                Object.Destroy(asset);
+            owned.Clear();
+        }
         private Material signalOff, signalRed;
         private sealed class CrossingSignal
         {
@@ -34,7 +50,7 @@ namespace GarageGauntlet
             DrawTown(course);
             DrawRailway(course);
             CombineScenery();
-            PlayerModel = new ScaleRcCar(root, this.shader);
+            PlayerModel = new ScaleRcCar(root, this.shader, this);
             Train = Group("Model train", root);
             wagon = Group("Model freight wagon", root);
             Model("realism/locomotive", Train, Vector3.zero, Vector3.zero,
@@ -58,7 +74,7 @@ namespace GarageGauntlet
 
         public static Color SlotColor(int lane) => SlotColors[lane];
 
-        public ScaleRcCar CreateRacer(string name) => new ScaleRcCar(root, shader, name);
+        public ScaleRcCar CreateRacer(string name) => new ScaleRcCar(root, shader, this, name);
 
         public void UpdateTrain(RailwayLoop railway, float elapsed, float dt)
         {
@@ -258,7 +274,7 @@ namespace GarageGauntlet
         private void Craftsman(float x, float z, float angle, Color tint)
         {
             Vector3 position = new Vector3(x, -.025f, z);
-            var material = new Material(Palette("realism/craftsman-palette")) { color = tint };
+            var material = Own(new Material(Palette("realism/craftsman-palette")) { color = tint });
             Model("realism/craftsman", root, position, new Vector3(0, angle + 180, 0),
                 new Vector3(2.4f, 1.8f, 2.15f), uniform: true, finish: material);
         }
@@ -339,8 +355,8 @@ namespace GarageGauntlet
             var uv = new Vector2[vertices.Length];
             for (int i = 0; i < vertices.Length; i++)
                 uv[i] = new Vector2(vertices[i].z, vertices[i].y) / .67f;
-            var mesh = new Mesh { name = "Brick gable ends", vertices = vertices, uv = uv,
-                triangles = new[] { 0, 1, 2, 3, 4, 5 } };
+            var mesh = Own(new Mesh { name = "Brick gable ends", vertices = vertices, uv = uv,
+                triangles = new[] { 0, 1, 2, 3, 4, 5 } });
             mesh.RecalculateNormals();
             mesh.RecalculateTangents();
             Transform ends = Group("Station gables", root);
@@ -442,7 +458,7 @@ namespace GarageGauntlet
                     triangles.Add(next + 1);
                 }
             }
-            var mesh = new Mesh { name = name, vertices = vertices, triangles = triangles.ToArray(), uv = uv };
+            var mesh = Own(new Mesh { name = name, vertices = vertices, triangles = triangles.ToArray(), uv = uv });
             mesh.RecalculateNormals();
             mesh.RecalculateTangents();
             Transform surface = Group(name, root);
@@ -492,7 +508,7 @@ namespace GarageGauntlet
 
         private Material Paint(float red, float green, float blue)
         {
-            var material = new Material(shader) { color = new Color(red, green, blue) };
+            var material = Own(new Material(shader) { color = new Color(red, green, blue) });
             material.SetFloat("_Glossiness", .14f);
             return material;
         }
@@ -500,7 +516,7 @@ namespace GarageGauntlet
         private Material Surface(string texture, Color tint, float gloss)
         {
             Material template = Resources.Load<Material>("realism/" + texture + "-surface");
-            Material material = template != null ? new Material(template) : new Material(shader);
+            Material material = template != null ? Own(new Material(template)) : Own(new Material(shader));
             material.color = tint;
             material.SetFloat("_Glossiness", gloss);
             return material;
@@ -548,7 +564,7 @@ namespace GarageGauntlet
             return renderer;
         }
 
-        private static Mesh SceneryCube(Vector3 size, Vector2 tile)
+        private Mesh SceneryCube(Vector3 size, Vector2 tile)
         {
             Vector3[] faces = { Vector3.right, Vector3.left, Vector3.up, Vector3.down, Vector3.forward, Vector3.back };
             var vertices = new Vector3[24];
@@ -584,7 +600,7 @@ namespace GarageGauntlet
                 triangles[triangle + 2] = triangles[triangle + 4] = vertex + 2;
                 triangles[triangle + 5] = vertex + 3;
             }
-            var mesh = new Mesh { name = "Scenery cube", vertices = vertices, normals = normals, triangles = triangles, uv = uv };
+            var mesh = Own(new Mesh { name = "Scenery cube", vertices = vertices, normals = normals, triangles = triangles, uv = uv });
             mesh.RecalculateTangents();
             return mesh;
         }
@@ -603,7 +619,7 @@ namespace GarageGauntlet
         {
             foreach (KeyValuePair<Material, List<CombineInstance>> batch in scenery)
             {
-                var mesh = new Mesh { name = "Tabletop scenery", indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 };
+                var mesh = Own(new Mesh { name = "Tabletop scenery", indexFormat = UnityEngine.Rendering.IndexFormat.UInt32 });
                 mesh.CombineMeshes(batch.Value.ToArray());
                 Transform group = Group("Scenery batch", root);
                 group.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;

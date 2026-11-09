@@ -11,6 +11,14 @@ namespace GarageGauntlet
         private static readonly Color Ink = new Color(.038f, .075f, .105f, .96f);
         private static readonly Color Quiet = new Color(.11f, .19f, .24f, .94f);
         private static readonly string[] Places = { "1ST", "2ND", "3RD", "4TH" };
+        private static readonly string[] CourseNames = { "Maple Junction", "Orchard Sprint", "Timber Ridge", "Depot Run" };
+        private static readonly string[] CourseDescriptions =
+        {
+            "Main Street and the broad Cottage Hill sweeper.",
+            "Carry speed along the orchard-side outer loop.",
+            "Thread the Cottage Hill bends and wooded descent.",
+            "Brake for a double bend into the switchyard crossing."
+        };
         private GUIStyle display, metric, body, small, label, centered, primary, secondary;
         private Texture2D map;
         private float Scale => Mathf.Clamp(Mathf.Min(Screen.width / 680f, Screen.height / 480f), .45f, 1.85f);
@@ -145,7 +153,7 @@ namespace GarageGauntlet
             {
                 float width = Mathf.Min(380, GridMenuOnSide ? Width * .43f : Width - 32);
                 return new Rect(GridMenuOnSide ? 26 : (Width - width) / 2,
-                    GridMenuOnSide ? Height / 2 - 144 : 22, width, 288);
+                    GridMenuOnSide ? Height / 2 - 161 : 18, width, 322);
             }
         }
 
@@ -154,26 +162,31 @@ namespace GarageGauntlet
             Rect card = GridMenuCard;
             float x = card.x, y = card.y, width = card.width;
             Card(card, Mint);
-            Caption(x + 19, y + 19, width - 38, "GARAGE GAUNTLET   /   01");
+            Caption(x + 19, y + 19, width - 38, "GARAGE GAUNTLET   /   " + ((int)layout + 1).ToString("00"));
             GUI.Label(new Rect(x + 18, y + 41, width - 36, 62), "Railway Rush", display);
-            GUI.Label(new Rect(x + 19, y + 106, width - 38, 42),
-                "Maple Junction · Main Street\nRace past the courthouse, theater, and railway.", body);
+            if (GUI.Button(new Rect(x + 18, y + 108, 44, 40), "PREV", secondary))
+                courseChange = -1;
+            if (GUI.Button(new Rect(card.xMax - 62, y + 108, 44, 40), "NEXT", secondary))
+                courseChange = 1;
+            Caption(x + 74, y + 105, width - 148, "COURSE " + ((int)layout + 1) + " / " + RaceCourse.LayoutCount);
+            GUI.Label(new Rect(x + 73, y + 123, width - 146, 27), CourseNames[(int)layout], body);
+            GUI.Label(new Rect(x + 19, y + 154, width - 38, 40), CourseDescriptions[(int)layout], body);
 
-            if (GUI.Button(new Rect(x + 18, y + 163, width - 36, 45), "START GRAND PRIX", primary))
+            if (GUI.Button(new Rect(x + 18, y + 197, width - 36, 45), "START GRAND PRIX", primary))
                 StartRace(true);
             float half = (width - 44) / 2;
-            if (GUI.Button(new Rect(x + 18, y + 215, half, 36), "TIME TRIAL", secondary))
+            if (GUI.Button(new Rect(x + 18, y + 249, half, 36), "TIME TRIAL", secondary))
                 StartRace(false);
-            if (GUI.Button(new Rect(x + 26 + half, y + 215, half, 36), sound.Enabled ? "SOUND ON" : "SOUND OFF", secondary))
+            if (GUI.Button(new Rect(x + 26 + half, y + 249, half, 36), sound.Enabled ? "SOUND ON" : "SOUND OFF", secondary))
                 sound.Toggle();
-            GUI.Label(new Rect(x + 19, y + 258, width - 38, 20), "Drag the trigger  •  W for full power  •  Shift to ease", small);
+            GUI.Label(new Rect(x + 19, y + 292, width - 38, 20), "Drag the trigger  •  W for full power  •  Shift to ease", small);
         }
 
         private void DrawTelemetry()
         {
             const float x = 14, y = 14;
             Card(new Rect(x, y, 253, 88), Mint);
-            Caption(x + 12, y + 8, 223, grandPrix ? "GRAND PRIX" : "TIME TRIAL");
+            Caption(x + 12, y + 8, 223, CourseNames[(int)layout].ToUpperInvariant());
             string rank = grandPrix ? Places[(state == RaceState.Finished ? finalPlace : PlaceInRace()) - 1] + "   " : "";
             GUI.Label(new Rect(x + 11, y + 22, 229, 31), rank + "LAP " + progress.Lap + " / " + RaceProgress.TotalLaps, metric);
             GUI.Label(new Rect(x + 12, y + 56, 113, 24), FormatTime(RaceTime), body);

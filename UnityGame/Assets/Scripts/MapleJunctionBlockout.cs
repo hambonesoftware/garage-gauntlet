@@ -40,7 +40,7 @@ namespace GarageGauntlet
                 triangles[triangle++] = b + 1;
             }
 
-            var mesh = new Mesh { name = "Maple Junction terrain grades", vertices = vertices, uv = uv, triangles = triangles };
+            var mesh = Own(new Mesh { name = "Maple Junction terrain grades", vertices = vertices, uv = uv, triangles = triangles });
             mesh.RecalculateNormals();
             Transform surface = Group(mesh.name, root);
             surface.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;

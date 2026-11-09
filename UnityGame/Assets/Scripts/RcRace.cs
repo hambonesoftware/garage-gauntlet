@@ -4,13 +4,13 @@ namespace GarageGauntlet
 {
     public sealed partial class RcRace : MonoBehaviour
     {
-        private const string TrialBestKey = "garage-gauntlet-slot-trial-maple-junction-sweeper";
-        private const string PrixBestKey = "garage-gauntlet-slot-prix-maple-junction-sweeper";
         private const float MaximumStep = .025f;
         private enum RaceState { Ready, Countdown, Racing, Paused, Finished }
 
         [SerializeField] private Shader paletteShader = null;
-        private readonly RaceCourse course = new RaceCourse();
+        private RaceCourse course;
+        private RaceCourse.Layout layout;
+        private int courseChange;
         private RaceState state;
         private RailwayTown town;
         private RaceProgress progress;
@@ -26,17 +26,35 @@ namespace GarageGauntlet
         private float noticeUntil;
 
         private float RaceTime => elapsed;
-        private string RecordKey => grandPrix ? PrixBestKey : TrialBestKey;
+        private string RecordKey
+        {
+            get
+            {
+                string mode = grandPrix ? "prix" : "trial";
+                string route = layout == RaceCourse.Layout.MapleJunction ? "maple-junction-sweeper" : layout.ToString();
+                return "garage-gauntlet-slot-" + mode + "-" + route;
+            }
+        }
 
         private void Awake()
         {
             Application.targetFrameRate = 60;
+            sound = new RaceAudio(gameObject);
+            LoadCourse(RaceCourse.Layout.MapleJunction);
+        }
+
+        private void LoadCourse(RaceCourse.Layout selected)
+        {
+            town?.Release();
+            layout = selected;
+            course = new RaceCourse(layout);
             progress = new RaceProgress(course);
             motor = new SlotMotor(course, 1);
-            town = new RailwayTown(transform, course, paletteShader);
+            var board = new GameObject("Railway board").transform;
+            board.SetParent(transform, false);
+            town = new RailwayTown(board, course, paletteShader);
             car = town.Car;
             raceCamera = town.Camera;
-            sound = new RaceAudio(gameObject);
             rivals = new[]
             {
                 new RivalDriver(course, town, "Ember", 0, .89f),
@@ -44,7 +62,18 @@ namespace GarageGauntlet
                 new RivalDriver(course, town, "Volt", 3, .94f)
             };
             ResetRace();
+            if (map != null)
+            {
+                Destroy(map);
+                map = DrawMapTexture();
+            }
             UpdateCamera(true);
+        }
+
+        private void OnDestroy()
+        {
+            town?.Release();
+            Destroy(map);
         }
 
         private void ResetRace()
@@ -95,6 +124,19 @@ namespace GarageGauntlet
 
         private void Update()
         {
+            if (state == RaceState.Ready)
+            {
+                if (Input.GetKeyDown(KeyCode.LeftArrow))
+                    courseChange = -1;
+                if (Input.GetKeyDown(KeyCode.RightArrow))
+                    courseChange = 1;
+                if (courseChange != 0)
+                {
+                    int count = RaceCourse.LayoutCount;
+                    LoadCourse((RaceCourse.Layout)(((int)layout + courseChange + count) % count));
+                    courseChange = 0;
+                }
+            }
             if (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P))
                 TogglePause();
             if (Input.GetKeyDown(KeyCode.M))

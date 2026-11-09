@@ -28,13 +28,13 @@ namespace GarageGauntlet
                 pixels[y * size + x] = new Color32(shade, shade, shade, 255);
             }
 
-            modelGrain = new Texture2D(size, size, TextureFormat.RGBA32, true)
+            modelGrain = Own(new Texture2D(size, size, TextureFormat.RGBA32, true)
             {
                 name = "Fine scenery grain",
                 wrapMode = TextureWrapMode.Repeat,
                 filterMode = FilterMode.Trilinear,
                 anisoLevel = 4
-            };
+            });
             modelGrain.SetPixels32(pixels);
             modelGrain.Apply(true, true);
             return modelGrain;
@@ -89,7 +89,7 @@ namespace GarageGauntlet
             }
         }
 
-        private static Mesh CreateFoliageClump()
+        private Mesh CreateFoliageClump()
         {
             const int rings = 8, slices = 12;
             var vertices = new Vector3[(rings + 1) * (slices + 1)];
@@ -121,7 +121,7 @@ namespace GarageGauntlet
                 indices[triangle++] = b + 1;
             }
 
-            var mesh = new Mesh { name = "Flocked foam canopy", vertices = vertices, uv = uv, triangles = indices };
+            var mesh = Own(new Mesh { name = "Flocked foam canopy", vertices = vertices, uv = uv, triangles = indices });
             mesh.RecalculateNormals();
             return mesh;
         }

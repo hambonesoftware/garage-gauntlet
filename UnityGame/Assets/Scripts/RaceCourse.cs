@@ -20,17 +20,65 @@ namespace GarageGauntlet
         public int Count => points.Count;
         public RailwayLoop Railway { get; }
 
-        public RaceCourse() : this(new[]
-        {
-            Point(0, -22), Point(14, -22), Point(25, -23), Point(33, -19),
-            Point(36, -12), Point(35, 2), Point(35.5f, 9), Point(34.5f, 16),
-            Point(31, 22.5f), Point(24.5f, 26.5f), Point(17, 27.5f), Point(10, 27),
-            Point(4, 24), Point(-3, 21.5f), Point(-12, 21.7f), Point(-19, 23.4f),
-            Point(-26, 25), Point(-34, 20), Point(-37, 12), Point(-36, 2),
-            Point(-38.2f, -5), Point(-36.5f, -13), Point(-32, -20), Point(-22, -25), Point(-13, -23), Point(-7, -22)
-        })
+        public enum Layout { MapleJunction, OrchardSprint, TimberRidge, DepotRun }
+        public const int LayoutCount = 4;
+
+        public RaceCourse(Layout layout = Layout.MapleJunction) : this(RoadCorners(layout))
         {
             Railway = new RailwayLoop(this);
+        }
+
+        private static Vector3[] RoadCorners(Layout layout)
+        {
+            // Share Main Street and the southern flyover. Each layout connects them via a different route.
+            var corners = new List<Vector3>
+            {
+                Point(0, -22), Point(14, -22), Point(25, -23), Point(33, -19), Point(36, -12), Point(35, 2)
+            };
+            switch (layout)
+            {
+                case Layout.OrchardSprint:
+                    corners.AddRange(new[]
+                    {
+                        Point(40, 8), Point(45, 16), Point(44, 23), Point(39, 28),
+                        Point(30, 28), Point(20, 26.5f), Point(9, 26), Point(-4, 25.5f),
+                        Point(-17, 25), Point(-26, 25), Point(-34, 20), Point(-37, 12), Point(-36, 2)
+                    });
+                    break;
+                case Layout.TimberRidge:
+                    corners.AddRange(new[]
+                    {
+                        Point(36, 8), Point(32.5f, 13), Point(31, 18), Point(32, 23), Point(27, 27),
+                        Point(18, 27.5f), Point(11, 23.5f), Point(2, 21), Point(-9, 22),
+                        Point(-19, 26), Point(-26, 27), Point(-35, 23), Point(-38, 16), Point(-38, 9),
+                        Point(-34, 4), Point(-35, 0)
+                    });
+                    break;
+                case Layout.DepotRun:
+                    corners.AddRange(new[]
+                    {
+                        Point(33.5f, 8), Point(34, 14), Point(39, 20), Point(38, 25), Point(31, 27),
+                        Point(21, 26.5f), Point(12, 26), Point(3, 25), Point(-6, 24), Point(-14, 24),
+                        Point(-22, 21), Point(-28, 19), Point(-35, 20), Point(-38, 15),
+                        Point(-37, 8), Point(-33.5f, 2)
+                    });
+                    break;
+                default:
+                    corners.AddRange(new[]
+                    {
+                        Point(35.5f, 9), Point(34.5f, 16), Point(31, 22.5f), Point(24.5f, 26.5f),
+                        Point(17, 27.5f), Point(10, 27), Point(4, 24), Point(-3, 21.5f),
+                        Point(-12, 21.7f), Point(-19, 23.4f), Point(-26, 25), Point(-34, 20),
+                        Point(-37, 12), Point(-36, 2)
+                    });
+                    break;
+            }
+            corners.AddRange(new[]
+            {
+                Point(-38.2f, -5), Point(-36.5f, -13), Point(-32, -20),
+                Point(-22, -25), Point(-13, -23), Point(-7, -22)
+            });
+            return corners.ToArray();
         }
 
         internal RaceCourse(Vector3[] corners)

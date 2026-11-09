@@ -1,8 +1,13 @@
 # Garage Gauntlet · Railway Rush
 
-The [Maple Junction master plan](MapleJunctionPlan.md) shows how the five districts, local streets, terrain, railway, and slot route fit together. The playable layout uses study volumes for new building lots.
+The [Maple Junction master plan](MapleJunctionPlan.md) shows how the five districts, local streets, terrain, railway, and slot route fit together. The map shows the original Maple Junction course.
 
-Race a die-cast slot car through Maple Junction on a four-lane tabletop circuit built into a miniature highway. The highway becomes Main Street downtown, with storefronts, curb parking, and a crosswalk along the racing straight. The railway meets the slot track at two grade crossings and runs below a ramped flyover at its southern turnaround. The three-lap Grand Prix pits you against Ember, Switch, and Volt. Time Trial gives you the same circuit on your own with a separate personal best. The game runs locally in Unity or in the browser.
+Race a die-cast slot car on four routes across the Maple Junction model railroad table. Use the arrows on the start screen to pick a course. The highway becomes Main Street downtown, with storefronts, curb parking, and a crosswalk along the racing straight. The railway meets the slot track at two grade crossings and runs below a ramped flyover at its southern turnaround. The three-lap Grand Prix pits you against Ember, Switch, and Volt. Time Trial lets you race solo. Each course keeps separate personal bests for both modes. The game runs locally in Unity or in the browser.
+
+- **Maple Junction** follows Main Street into the broad Cottage Hill sweeper.
+- **Orchard Sprint** takes a longer route around the east side of town.
+- **Timber Ridge** winds through Cottage Hill and down the wooded slope.
+- **Depot Run** doubles back through the switchyard approach before descending to the crossing.
 
 ## Play in Unity
 

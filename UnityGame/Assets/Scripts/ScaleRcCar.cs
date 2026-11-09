@@ -11,7 +11,7 @@ namespace GarageGauntlet
         private float roll, previousSpeed, steerAngle, lean, pitch;
         public Transform Root { get; }
 
-        public ScaleRcCar(Transform parent, Shader shader, string team = null)
+        public ScaleRcCar(Transform parent, Shader shader, RailwayTown town, string team = null)
         {
             Root = Group(team ?? "Player slot car", parent);
             Transform rig = Group("Die-cast assembly", Root);
@@ -21,10 +21,10 @@ namespace GarageGauntlet
                 throw new System.InvalidOperationException("Missing die-cast car material.");
             if (team != null)
             {
-                finish = new Material(finish);
+                finish = town.Own(new Material(finish));
                 finish.mainTexture = Resources.Load<Texture2D>("realism/diecast-" + team.ToLowerInvariant());
             }
-            var glass = new Material(shader) { color = new Color(.13f, .19f, .22f) };
+            var glass = town.Own(new Material(shader) { color = new Color(.13f, .19f, .22f) });
             glass.SetFloat("_Glossiness", .91f);
             glass.SetFloat("_Metallic", .18f);
 

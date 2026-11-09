@@ -425,7 +425,7 @@ namespace GarageGauntlet
             if (townLettering == null)
             {
                 font.RequestCharactersInTexture("ABCDEFGHIJKLMNOPQRSTUVWXYZ •", 48, FontStyle.Bold);
-                townLettering = new Material(Resources.Load<Shader>("TownLettering"));
+                townLettering = Own(new Material(Resources.Load<Shader>("TownLettering")));
             }
             townLettering.mainTexture = font.material.mainTexture;
             sign.GetComponent<MeshRenderer>().sharedMaterial = townLettering;
@@ -444,7 +444,7 @@ namespace GarageGauntlet
                 triangles[i * 3 + 1] = i + 1;
                 triangles[i * 3 + 2] = (i + 1) % segments + 1;
             }
-            var mesh = new Mesh { name = name, vertices = vertices, triangles = triangles };
+            var mesh = Own(new Mesh { name = name, vertices = vertices, triangles = triangles });
             mesh.RecalculateNormals();
             Transform surface = Group(name, root);
             surface.localPosition = center;
