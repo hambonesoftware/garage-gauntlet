@@ -11,13 +11,18 @@ namespace GarageGauntlet
         private static readonly Color Ink = new Color(.038f, .075f, .105f, .96f);
         private static readonly Color Quiet = new Color(.11f, .19f, .24f, .94f);
         private static readonly string[] Places = { "1ST", "2ND", "3RD", "4TH" };
-        private static readonly string[] CourseNames = { "Maple Junction", "Orchard Sprint", "Timber Ridge", "Depot Run" };
+        private static readonly string[] CourseNames = { "Maple Junction", "Orchard Sprint", "Timber Ridge", "Depot Run",
+            "Springfield, IL", "Springfield, MO", "Springfield, MA", "Springfield, OR" };
         private static readonly string[] CourseDescriptions =
         {
             "Main Street and the broad Cottage Hill sweeper.",
             "Carry speed along the orchard-side outer loop.",
             "Thread the Cottage Hill bends and wooded descent.",
-            "Brake for a double bend into the switchyard crossing."
+            "Brake for a double bend into the switchyard crossing.",
+            "Capitol Square and Lincoln's neighborhood.",
+            "Route 66 neon and the Frisco freight district.",
+            "Armory Hill above the Connecticut River.",
+            "The Booth-Kelly millrace and the fir-lined foothills."
         };
         private GUIStyle display, metric, body, small, label, centered, primary, secondary;
         private Texture2D map;
@@ -114,7 +119,7 @@ namespace GarageGauntlet
 
             if (state == RaceState.Ready)
             {
-                foreach (MapleJunctionPlan.District district in MapleJunctionPlan.Districts)
+                foreach (MapleJunctionPlan.District district in districts)
                     DrawPreviewLabel(district.Name, district.Marker, district.Name.Length * 10 + 12);
                 DrawGridMenu();
             }

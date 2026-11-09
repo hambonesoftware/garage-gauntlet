@@ -20,16 +20,26 @@ namespace GarageGauntlet
         public int Count => points.Count;
         public RailwayLoop Railway { get; }
 
-        public enum Layout { MapleJunction, OrchardSprint, TimberRidge, DepotRun }
-        public const int LayoutCount = 4;
+        public enum Layout
+        {
+            MapleJunction, OrchardSprint, TimberRidge, DepotRun,
+            SpringfieldIllinois, SpringfieldMissouri, SpringfieldMassachusetts, SpringfieldOregon
+        }
+        public Layout Route { get; }
+        public bool IsSpringfield => Route >= Layout.SpringfieldIllinois;
+        public const int LayoutCount = 8;
 
         public RaceCourse(Layout layout = Layout.MapleJunction) : this(RoadCorners(layout))
         {
+            Route = layout;
             Railway = new RailwayLoop(this);
         }
 
         private static Vector3[] RoadCorners(Layout layout)
         {
+            if (layout >= Layout.SpringfieldIllinois)
+                return SpringfieldPlan.Road(layout);
+
             // Share Main Street and the southern flyover. Each layout connects them via a different route.
             var corners = new List<Vector3>
             {
@@ -144,9 +154,12 @@ namespace GarageGauntlet
             if (Railway == null)
                 return 0;
             float rampDistance = Mathf.Max(Railway.BridgeStart - distance, distance - Railway.BridgeEnd);
-            return Mathf.Max(MapleJunctionPlan.GroundHeight(position.x, position.z),
+            return Mathf.Max(GroundHeight(position.x, position.z),
                 Mathf.SmoothStep(BridgeHeight, 0, Mathf.Clamp01(rampDistance / RampLength)));
         }
+
+        public float GroundHeight(float x, float z) => IsSpringfield
+            ? SpringfieldPlan.GroundHeight(Route, x, z) : MapleJunctionPlan.GroundHeight(x, z);
 
         public float Locate(Vector3 position, out float lateral)
         {

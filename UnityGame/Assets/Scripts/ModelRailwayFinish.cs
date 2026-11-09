@@ -49,9 +49,9 @@ namespace GarageGauntlet
             return flock;
         }
 
-        private void DrawFlockedTree(Vector3 origin, int index)
+        private void DrawFlockedTree(Vector3 origin, int index, RaceCourse course = null)
         {
-            origin.y += MapleJunctionPlan.GroundHeight(origin.x, origin.z);
+            origin.y += course?.GroundHeight(origin.x, origin.z) ?? MapleJunctionPlan.GroundHeight(origin.x, origin.z);
             if (foliageClump == null)
             {
                 foliageClump = CreateFoliageClump();

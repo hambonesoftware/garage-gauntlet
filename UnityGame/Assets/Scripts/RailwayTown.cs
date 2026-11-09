@@ -47,7 +47,10 @@ namespace GarageGauntlet
             this.shader = shader != null ? shader : Shader.Find("Standard");
             SetupLighting();
             DrawBoard(course);
-            DrawTown(course);
+            if (course.IsSpringfield)
+                DrawSpringfield(course);
+            else
+                DrawTown(course);
             DrawRailway(course);
             CombineScenery();
             PlayerModel = new ScaleRcCar(root, this.shader, this);
@@ -115,7 +118,7 @@ namespace GarageGauntlet
         {
             Material wood = Surface("timber", new Color(.79f, .58f, .45f), .28f);
             Material trim = Paint(.69f, .40f, .23f);
-            Material grass = ModelFlock(new Color(.32f, .38f, .23f), new Vector2(1f, 1f));
+            Material grass = ModelFlock(course.IsSpringfield ? SpringfieldPlan.Flock(course.Route) : new Color(.32f, .38f, .23f), new Vector2(1f, 1f));
             Material plastic = Paint(.14f, .145f, .15f);
             plastic.mainTexture = ModelGrain();
             plastic.mainTextureScale = Vector2.one * 2.9f;
@@ -133,7 +136,7 @@ namespace GarageGauntlet
             SurfaceBox("Wooden display board", center + Vector3.down * .56f, new Vector3(width, .9f, depth), new Vector2(4.1f, 1.4f), wood);
             Box("Tabletop edge band", center + Vector3.down * .25f, new Vector3(width + .1f, .12f, depth + .1f), trim);
             SurfaceBox("Flocked tabletop", center + Vector3.down * .105f, new Vector3(width - .3f, .17f, depth - .3f), new Vector2(3.4f, 3.4f), grass);
-            DrawMapleTerrain(course, grass);
+            DrawTerrain(course, grass);
             DrawWorkbench(width, depth, wood, trim);
             Ribbon(course, RaceCourse.HalfWidth + .16f, .024f, shoulder, "Slot track bevel");
             Ribbon(course, RaceCourse.HalfWidth, .035f, plastic, "Molded slot track");

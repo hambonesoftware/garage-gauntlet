@@ -4,7 +4,7 @@ namespace GarageGauntlet
 {
     internal sealed partial class RailwayTown
     {
-        private void DrawMapleTerrain(RaceCourse course, Material grass)
+        private void DrawTerrain(RaceCourse course, Material grass)
         {
             const int columns = 98, rows = 86;
             var vertices = new Vector3[(columns + 1) * (rows + 1)];
@@ -17,7 +17,7 @@ namespace GarageGauntlet
                 float x = RaceCourse.BoardCenter.x + (2f * col / columns - 1) * (RaceCourse.BoardHalfWidth - .15f);
                 float z = RaceCourse.BoardCenter.z + (2f * row / rows - 1) * (RaceCourse.BoardHalfDepth - .15f);
                 int a = row * (columns + 1) + col;
-                var point = new Vector3(x, MapleJunctionPlan.GroundHeight(x, z), z);
+                var point = new Vector3(x, course.GroundHeight(x, z), z);
                 if (point.y > .025f)
                 {
                     float distance = course.Locate(point, out float gap);
@@ -40,7 +40,7 @@ namespace GarageGauntlet
                 triangles[triangle++] = b + 1;
             }
 
-            var mesh = Own(new Mesh { name = "Maple Junction terrain grades", vertices = vertices, uv = uv, triangles = triangles });
+            var mesh = Own(new Mesh { name = "Tabletop terrain grades", vertices = vertices, uv = uv, triangles = triangles });
             mesh.RecalculateNormals();
             Transform surface = Group(mesh.name, root);
             surface.gameObject.AddComponent<MeshFilter>().sharedMesh = mesh;

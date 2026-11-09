@@ -11,6 +11,7 @@ namespace GarageGauntlet
         private RaceCourse course;
         private RaceCourse.Layout layout;
         private int courseChange;
+        private MapleJunctionPlan.District[] districts;
         private RaceState state;
         private RailwayTown town;
         private RaceProgress progress;
@@ -48,6 +49,7 @@ namespace GarageGauntlet
             town?.Release();
             layout = selected;
             course = new RaceCourse(layout);
+            districts = course.IsSpringfield ? SpringfieldPlan.Districts(layout) : MapleJunctionPlan.Districts;
             progress = new RaceProgress(course);
             motor = new SlotMotor(course, 1);
             var board = new GameObject("Railway board").transform;
